@@ -12,16 +12,17 @@ def translateConstantExpression(pr,n,symRead):
             b+=1
     # print(a)
     return a
+
 #处理
 register=1
-def handleConstantExpression(a,b):
-    global register
+
+def handleConstantExpression(a,b,reg):
     #消除括号
     i=b
     c=[]
     while i<len(a):
         if a[i]=="(":
-            d,e=handleConstantExpression(a,i+1)
+            d,e=handleConstantExpression(a,i+1,reg)
             c.append(d)
             i=e
         elif a[i]==")":
@@ -49,10 +50,10 @@ def handleConstantExpression(a,b):
                     if j<len(c)-1 and c[j+1]!="+" and c[j+1]!="-" and c[j+1]!="*" and c[j+1]!="/" and c[j+1]!="%":
                         if j-1>=0 and (c[j-1]!="+" and c[j-1]!="-" and c[j-1]!="*" and c[j-1]!="/" and c[j-1]!="%"):
                                 f.pop()
-                                f.append(printConstantExpression(c[j],c[j-1],c[j+1]))
+                                f.append(printConstantExpression(c[j],c[j-1],c[j+1],reg))
                                 isCounted=True
                         else:
-                            f.append(printConstantExpression(c[j], 0, c[j + 1]))
+                            f.append(printConstantExpression(c[j], 0, c[j + 1],reg))
                             isCounted=True
                         g=False
                         j+=2
@@ -67,22 +68,22 @@ def handleConstantExpression(a,b):
                     if j<len(c)-1 and c[j+1]!="+" and c[j+1]!="-" and c[j+1]!="*" and c[j+1]!="/" and c[j+1]!="%":
                         if j-1>=0 and (c[j-1]!="+" and c[j-1]!="-" and c[j-1]!="*" and c[j-1]!="/" and c[j-1]!="%"):
                                 f.pop()
-                                f.append(printConstantExpression(c[j],c[j-1],c[j+1]))
+                                f.append(printConstantExpression(c[j],c[j-1],c[j+1],reg))
                                 isCounted = True
                         else:
-                            f.append(printConstantExpression(c[j], 0, c[j + 1]))
+                            f.append(printConstantExpression(c[j], 0, c[j + 1],reg))
                             isCounted = True
                         g=False
                         j+=2
             if g:
                 f.append(c[j])
                 j+=1
-    return handleConstantExpression(f,0)[0],i
+    return handleConstantExpression(f,0,reg)[0],i
 
 #输出
-def printConstantExpression(sym,a,b):
-    global register
-    c="%"+str(register)
+def printConstantExpression(sym,a,b,reg):
+    #global register
+    c="%"+str(reg.getID())
     d="\t"+c+"="
     if sym=="-":
         d+="sub"
@@ -99,10 +100,10 @@ def printConstantExpression(sym,a,b):
     d+=","
     d+=str(b)
     print(d)
-    register+=1
+    #register+=1
     return c
 #封装运行
-def runConstantExpression(constantExpression, number, symRead):
-    handleConstantExpression(translateConstantExpression(constantExpression, number, symRead), 0)
-    print("\tret i32 %" + str(register - 1))
+def runConstantExpression(constantExpression, number, symRead,reg):
+    handleConstantExpression(translateConstantExpression(constantExpression, number, symRead), 0,reg)
+    print("\tret i32 %" + str(reg.readID()))
     print("}")
