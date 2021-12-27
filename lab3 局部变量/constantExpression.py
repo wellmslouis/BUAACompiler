@@ -1,15 +1,24 @@
 #常量表达式
 
 #翻译
-def translateConstantExpression(pr,n,symRead):
+def translateConstantExpression(pr,n,symRead,nid,vQs,reg):
     a=[]
-    b=0
     for i in range(len(pr)):
-        if pr[i]!=20:
-            a.append(symRead[pr[i]])
+        if pr[i]==20:
+            a.append(n[nid])
+            nid+=1
+        elif pr[i]==10:
+            vQs.getNext()
+            b=reg.getID()
+            if vQs.getReg()!=0:
+                # %5 = load i32, i32* %2
+                print("%"+b+" = load i32, i32* %"+vQs.getReg())#准备
+                a.append("%"+b)
+            else:
+                print("错误：未定义的变量！")
+                exit(1)
         else:
-            a.append(n[b])
-            b+=1
+            a.append(symRead[pr[i]])
     # print(a)
     return a
 
@@ -102,8 +111,26 @@ def printConstantExpression(sym,a,b,reg):
     print(d)
     #register+=1
     return c
+
 #封装运行
-def runConstantExpression(constantExpression, number, symRead,reg):
-    handleConstantExpression(translateConstantExpression(constantExpression, number, symRead), 0,reg)
-    print("\tret i32 %" + str(reg.readID()))
-    print("}")
+def runConstantExpression(constantExpression, number, symRead,reg,nid,vQs):
+    if len(constantExpression)==1:
+        a=constantExpression[0]
+        if a==10:
+            vQs.getNext()
+            b = reg.getID()
+            if vQs.getReg() != 0:
+                # %5 = load i32, i32* %2
+                print("%" + b + " = load i32, i32* %" + vQs.getReg())  # 准备
+                return "%"+str(b)
+            else:
+                print("错误：未定义的变量！")
+                exit(1)
+        elif a==20:
+            c=number[nid]
+            nid += 1
+            return c
+    else:
+        handleConstantExpression(translateConstantExpression(constantExpression, number, symRead,nid,vQs,reg), 0,reg)
+        #print("\tret i32 %" + str(reg.readID()))
+        return "%"+str(reg.readID())
