@@ -127,3 +127,10 @@ class variableQuantitys:
     def getNumForID(self,id):
         a = self.order[id]
         return self.array[a].getNum()
+
+    #查询变量
+    def selectName(self,nameInput):
+        for i in self.array:
+            if i.getName()==nameInput:
+                return True
+        return False

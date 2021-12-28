@@ -53,6 +53,14 @@ if __name__ == '__main__':
     reg = register()
     nid=nid()
 
+    if vQs.selectName("getint"):
+        print("declare i32 @getint()")
+    if vQs.selectName("getch"):
+        print("declare i32 @getch()")
+    if vQs.selectName("putint"):
+        print("declare void @putint(i32)")
+    if vQs.selectName("putch"):
+        print("declare void @putch(i32)")
     print("define dso_local i32 @main(){")
     paragraphProcess(print_,vQs,reg,number,symRead,nid)
     print("}")
