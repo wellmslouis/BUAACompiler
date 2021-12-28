@@ -10,12 +10,12 @@ from process import paragraphProcess
 if __name__ == '__main__':
     # 程序存在于这个字符串中
     # 标准读入
-    # procedure = ""
-    # for l in sys.stdin:
-    #     procedure += l
+    procedure = ""
+    for l in sys.stdin:
+        procedure += l
     # 测试读入
-    with open("test/testG.txt", "r") as f:
-        procedure = f.read()
+    # with open("test/testI.txt", "r") as f:
+    #     procedure = f.read()
     #print(procedure.replace("[]","\n"))
     number = []
     vQs=variableQuantitys()
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         60: "Finish"
     }
     a=CompUnit(procedure, number, print_,vQs)
-    print(print_)
+    #print(print_)
     #vQs.printQs()
     if not a:
         exit(1)

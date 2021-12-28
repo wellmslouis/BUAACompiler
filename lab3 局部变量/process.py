@@ -104,7 +104,7 @@ def sentenceBProcess(a,vQs,reg,number,symRead,nid):
                 func=True
             elif vQs.matchName("getch"):
                 valueR.append( "%" + str(reg.getID()))
-                print(valueR[0] + " = call i32 @getint()")
+                print(valueR[0] + " = call i32 @getch()")
                 func=True
             else:
                 vQs.getLast()
