@@ -9,7 +9,7 @@ def paragraphProcess(pr,vQs,reg,number,symRead,nid):
         if pr[i] == 33:
             a = True
             continue
-        if pr[i] == 35:
+        if pr[i] == 13:
             a = False
         if a:
             b.append(pr[i])
@@ -60,6 +60,7 @@ def sentenceAProcess(a,vQs,reg,number,symRead,nid):
                 b.append(i)
             sentenceBProcess(b, vQs, reg, number, symRead, nid)
     else:
+        a.pop()
         sentenceBProcess(a,vQs,reg,number,symRead,nid)
 
 
@@ -83,20 +84,22 @@ def sentenceBProcess(a,vQs,reg,number,symRead,nid):
             right.append(i)
     idL=equalLeft(left,vQs,reg,number, symRead,nid)
     valueR=[]
-    if idL!=-1 and len(right)!=0:
-        func=True#是函数
+    # if idL!=-1:
+    if len(right)!=0:
+        func=False#是函数
         if right[0]==10:
             vQs.getNext()
             if vQs.matchName("getint"):
                 valueR.append("%"+str(reg.getID()))
                 print(valueR[0]+" = call i32 @getint()")
+                func=True
             elif vQs.matchName("getch"):
                 valueR.append( "%" + str(reg.getID()))
                 print(valueR[0] + " = call i32 @getint()")
+                func=True
             else:
                 vQs.getLast()
-                func=False
-        if not func:
+        if func==False:
             valueR.append(runConstantExpression(right,number, symRead,reg,nid,vQs))
     if idL!=-1:#不是函数
         #int类型已定义
@@ -104,7 +107,7 @@ def sentenceBProcess(a,vQs,reg,number,symRead,nid):
             #store i32 % 2, i32 * % 1
             print("store i32 "+str(valueR[0])+", i32* %"+str(vQs.getRegForID(idL)))
         #const类型无值
-        elif vQs.getTypeForID(idL)==10 and vQs.getNumForID(idL)=="":
+        elif vQs.getTypeForID(idL)==20 and vQs.getNumForID(idL)=="":
             #!没有解决右边可能是变量的问题
             vQs.setNumForID(valueR[0],idL)
 
@@ -151,6 +154,7 @@ def equalLeft(left,vQs,reg,number, symRead,nid):
             b=[]#函数参数
             while left[i]!=32:#不到右括号
                 b.append(left[i])
+                i+=1
             value=runConstantExpression(b,number, symRead,reg,nid,vQs)
             #call void @ putint(i32 % 4)
             print("call void @putint(i32 "+str(value)+")")

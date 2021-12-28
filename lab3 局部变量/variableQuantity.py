@@ -86,6 +86,10 @@ class variableQuantitys:
         a = self.order[self.id]
         return self.array[a].getType()
 
+    def getNum(self):
+        a = self.order[self.id]
+        return self.array[a].getNum()
+
     def matchName(self,nameInput):
         a = self.order[self.id]
         name=self.array[a].getName()

@@ -8,11 +8,13 @@ def translateConstantExpression(pr,n,symRead,nid,vQs,reg):
             a.append(n[nid.getID()])
         elif pr[i]==10:
             vQs.getNext()
-            b=reg.getID()
-            if vQs.getReg()!=0:
+            if vQs.getType()==10 and vQs.getReg()!=0:
                 # %5 = load i32, i32* %2
-                print("%"+b+" = load i32, i32* %"+vQs.getReg())#准备
-                a.append("%"+b)
+                b = reg.getID()
+                print("%"+str(b)+" = load i32, i32* %"+str(vQs.getReg()))#准备
+                a.append("%"+str(b))
+            elif vQs.getType()==20 and vQs.getNum()!="":
+                a.append(vQs.getNum())
             else:
                 print("错误：未定义的变量！")
                 exit(1)
@@ -92,7 +94,7 @@ def handleConstantExpression(a,b,reg):
 def printConstantExpression(sym,a,b,reg):
     #global register
     c="%"+str(reg.getID())
-    d="\t"+c+"="
+    d=c+"="
     if sym=="-":
         d+="sub"
     elif sym =="+":
