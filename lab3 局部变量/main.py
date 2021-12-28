@@ -53,4 +53,6 @@ if __name__ == '__main__':
     reg = register()
     nid=nid()
 
+    print("define dso_local i32 @main(){")
     paragraphProcess(print_,vQs,reg,number,symRead,nid)
+    print("}")

@@ -5,14 +5,21 @@ def paragraphProcess(pr,vQs,reg,number,symRead,nid):
     #去除最外层
     b = []
     a = False
+    d=False
+    e=[]
     for i in range(len(pr)):
         if pr[i] == 33:
             a = True
             continue
-        if pr[i] == 13:
+        elif pr[i] == 13:
             a = False
+            d=True
+        elif pr[i]==35:
+            d=False
         if a:
             b.append(pr[i])
+        if d:
+            e.append(pr[i])
     #拆分为语句
     c=[]
     for i in b:
@@ -20,6 +27,7 @@ def paragraphProcess(pr,vQs,reg,number,symRead,nid):
         if i==34:
             sentenceAProcess(c,vQs,reg,number,symRead,nid)
             c.clear()
+    returnProcess(e,number,symRead,reg,nid,vQs)
 
 def sentenceAProcess(a,vQs,reg,number,symRead,nid):
     #遍寻逗号
@@ -170,3 +178,14 @@ def equalLeft(left,vQs,reg,number, symRead,nid):
             return -1
         else:
             return vQs.getID()
+
+
+def returnProcess(a, number, symRead, reg, nid, vQs):
+    if a[0]==13:
+        i=1
+        b=[]
+        while a[i]!=34:
+            b.append(a[i])
+            i+=1
+        value = runConstantExpression(b, number, symRead, reg, nid, vQs)
+        print("ret i32 " + str(value))
