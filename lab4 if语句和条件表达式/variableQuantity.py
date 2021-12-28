@@ -63,6 +63,8 @@ class variableQuantitys:
     # 下一个变量
     def getNext(self):
         self.id += 1
+        #test
+        print("get "+self.getName())
 
     # 上一个变量
     def getLast(self):
@@ -89,6 +91,10 @@ class variableQuantitys:
     def getNum(self):
         a = self.order[self.id]
         return self.array[a].getNum()
+
+    def getName(self):
+        a = self.order[self.id]
+        return self.array[a].getName()
 
     def matchName(self,nameInput):
         a = self.order[self.id]

@@ -5,6 +5,7 @@ from syntaxAnalysis import CompUnit
 from constantExpression import runConstantExpression
 from variableQuantity import variableQuantitys
 from process import paragraphProcess
+from llvm import llvm
 
 
 if __name__ == '__main__':
@@ -14,7 +15,7 @@ if __name__ == '__main__':
     # for l in sys.stdin:
     #     procedure += l
     # 测试读入
-    with open("test/testA.txt", "r") as f:
+    with open("test/testK.txt", "r") as f:
         procedure = f.read()
     # print(procedure.replace("[]","\n"))
     number = []
@@ -40,6 +41,7 @@ if __name__ == '__main__':
         310: "%",
         311:",",
         312:"=",
+        313:"!",
         40: "Error",
         50:"Notes",
         60: "Finish"
@@ -53,6 +55,7 @@ if __name__ == '__main__':
 
     reg = register()
     nid=nid()
+    llvm=llvm()
 
     if vQs.selectName("getint"):
         print("declare i32 @getint()")
@@ -67,5 +70,11 @@ if __name__ == '__main__':
     b=len(print_)-1
     print_A=print_[5:b]
     # print(print_A)
-    paragraphProcess(print_A,vQs,reg,number,symRead,nid)
+    paragraphProcess(print_A, vQs, reg, number, symRead, nid, llvm, 0)
+    llvm.printAll()
+    # try:
+    #     paragraphProcess(print_A,vQs,reg,number,symRead,nid,llvm,0)
+    #     llvm.printAll()
+    # except:
+    #     llvm.printAll()
     print("}")
