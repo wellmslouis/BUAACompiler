@@ -2,33 +2,59 @@
 from constantExpression import runConstantExpression
 #段落处理
 def paragraphProcess(pr,vQs,reg,number,symRead,nid):
-    #去除最外层
-    b = []
-    a = False
-    d=False
-    e=[]
-    for i in range(len(pr)):
-        if pr[i] == 33:
-            a = True
-            continue
-        elif pr[i] == 13:
-            a = False
-            d=True
-        elif pr[i]==35:
-            d=False
-        if a:
-            b.append(pr[i])
-        if d:
-            e.append(pr[i])
-    #拆分为语句
-    c=[]
-    for i in b:
-        c.append(i)
-        if i==34:
-            sentenceAProcess(c,vQs,reg,number,symRead,nid)
-            c.clear()
-    returnProcess(e,number,symRead,reg,nid,vQs)
+    a=[]
+    i=0
+    while i<len(pr):
+        a.append(pr[i])
+        if pr[i]==34:
+            if a[0]==13:
+                returnProcess(a, number, symRead, reg, nid, vQs)
+            else:
+                sentenceAProcess(a,vQs,reg,number,symRead,nid)
+            a.clear()
+        elif pr[i]==15:
+            a.pop()
+            b=[15]
+            i+=1
+            while i < len(pr):
+                b.append(pr[i])
+                if pr[i]==33:
+                    break
+                i+=1
+            braces=[]#左1右2
+            while i<len(pr):
+                b.append(pr[i])
+                if pr[i]==33:
+                    braces.append(1)
+                elif pr[i]==35:
+                    if braces[len(braces)-1]==1:
+                        braces.pop()
+                    else:
+                        braces.append(2)
+                if len(braces)==0:
+                    break
+                i+=1
+            i+=1
+            if pr[i]==16:
+                b.append(pr[i])
+                i+=1
+                while i < len(pr):
+                    b.append(pr[i])
+                    if pr[i] == 33:
+                        braces.append(1)
+                    elif pr[i] == 35:
+                        if braces[len(braces) - 1] == 1:
+                            braces.pop()
+                        else:
+                            braces.append(2)
+                    if len(braces) == 0:
+                        break
+                    i += 1
+            conditionProcess(b,vQs,reg,number,symRead,nid)
+        i+=1
 
+
+#语句处理（从上一个分号（不含）到下一个分号）
 def sentenceAProcess(a,vQs,reg,number,symRead,nid):
     #遍寻逗号
     isTwo=False
@@ -73,7 +99,6 @@ def sentenceAProcess(a,vQs,reg,number,symRead,nid):
         sentenceBProcess(a,vQs,reg,number,symRead,nid)
 
 
-#语句处理（从上一个分号（不含）到下一个分号）
 #1：（定义）某（=某（右可以是常量表达式/输入函数））
 #2：输出函数
 #3.单独语句不处理
@@ -129,7 +154,6 @@ def sentenceBProcess(a,vQs,reg,number,symRead,nid):
                 else:
                     print("错误：常量已赋值！")
                     exit(1)
-
 
 
 #返回vQs.getID()
@@ -201,3 +225,7 @@ def returnProcess(a, number, symRead, reg, nid, vQs):
             i+=1
         valueA,valueB = runConstantExpression(b, number, symRead, reg, nid, vQs)
         print("ret i32 " + str(valueA))
+
+
+def conditionProcess(a,vQs,reg,number,symRead,nid):
+    print(a)

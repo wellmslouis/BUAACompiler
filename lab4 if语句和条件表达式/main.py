@@ -14,7 +14,7 @@ if __name__ == '__main__':
     # for l in sys.stdin:
     #     procedure += l
     # 测试读入
-    with open("test/testJ.txt", "r") as f:
+    with open("test/testA.txt", "r") as f:
         procedure = f.read()
     # print(procedure.replace("[]","\n"))
     number = []
@@ -46,22 +46,26 @@ if __name__ == '__main__':
     }
     a=CompUnit(procedure, number, print_,vQs)
     print(print_)
-    print(print_[len(print_)-1])
+    # print(print_[len(print_)-1])
     # vQs.printQs()
     if not a:
         exit(1)
-    #
-    # reg = register()
-    # nid=nid()
 
-    # if vQs.selectName("getint"):
-    #     print("declare i32 @getint()")
-    # if vQs.selectName("getch"):
-    #     print("declare i32 @getch()")
-    # if vQs.selectName("putint"):
-    #     print("declare void @putint(i32)")
-    # if vQs.selectName("putch"):
-    #     print("declare void @putch(i32)")
-    # print("define dso_local i32 @main(){")
-    # paragraphProcess(print_,vQs,reg,number,symRead,nid)
-    # print("}")
+    reg = register()
+    nid=nid()
+
+    if vQs.selectName("getint"):
+        print("declare i32 @getint()")
+    if vQs.selectName("getch"):
+        print("declare i32 @getch()")
+    if vQs.selectName("putint"):
+        print("declare void @putint(i32)")
+    if vQs.selectName("putch"):
+        print("declare void @putch(i32)")
+    print("define dso_local i32 @main(){")
+    # 去除main函数外层
+    b=len(print_)-1
+    print_A=print_[5:b]
+    # print(print_A)
+    paragraphProcess(print_A,vQs,reg,number,symRead,nid)
+    print("}")
