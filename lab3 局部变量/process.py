@@ -48,6 +48,7 @@ def sentenceAProcess(a,vQs,reg,number,symRead,nid):
                 else:
                     c.append(a[j])
                 j+=1
+            sentenceBProcess(c, vQs, reg, number, symRead, nid)
         elif a[0]==14 and a[1]==11:
             c = [14,11]
             j = 2
@@ -110,14 +111,15 @@ def sentenceBProcess(a,vQs,reg,number,symRead,nid):
         if func==False:
             valueR.append(runConstantExpression(right,number, symRead,reg,nid,vQs))
     if idL!=-1:#不是函数
-        #int类型已定义
-        if vQs.getTypeForID(idL)==10 and vQs.getRegForID(idL)!=0:
-            #store i32 % 2, i32 * % 1
-            print("store i32 "+str(valueR[0])+", i32* %"+str(vQs.getRegForID(idL)))
-        #const类型无值
-        elif vQs.getTypeForID(idL)==20 and vQs.getNumForID(idL)=="":
-            #!没有解决右边可能是变量的问题
-            vQs.setNumForID(valueR[0],idL)
+        if len(right)!=0:
+            #int类型已定义
+            if vQs.getTypeForID(idL)==10 and vQs.getRegForID(idL)!=0:
+                #store i32 % 2, i32 * % 1
+                print("store i32 "+str(valueR[0])+", i32* %"+str(vQs.getRegForID(idL)))
+            #const类型无值
+            elif vQs.getTypeForID(idL)==20 and vQs.getNumForID(idL)=="":
+                #!没有解决右边可能是变量的问题
+                vQs.setNumForID(valueR[0],idL)
 
 
 
