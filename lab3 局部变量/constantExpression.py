@@ -3,6 +3,7 @@
 #翻译
 def translateConstantExpression(pr,n,symRead,nid,vQs,reg):
     a=[]
+    haveVQ=False
     for i in range(len(pr)):
         if pr[i]==20:
             a.append(n[nid.getID()])
@@ -13,6 +14,7 @@ def translateConstantExpression(pr,n,symRead,nid,vQs,reg):
                 b = reg.getID()
                 print("%"+str(b)+" = load i32, i32* %"+str(vQs.getReg()))#准备
                 a.append("%"+str(b))
+                haveVQ=True
             elif vQs.getType()==20 and vQs.getNum()!="":
                 a.append(vQs.getNum())
             else:
@@ -21,7 +23,7 @@ def translateConstantExpression(pr,n,symRead,nid,vQs,reg):
         else:
             a.append(symRead[pr[i]])
     # print(a)
-    return a
+    return a,haveVQ
 
 #处理
 #register=1
@@ -113,23 +115,27 @@ def printConstantExpression(sym,a,b,reg):
     #register+=1
     return c
 
-#封装运行
+#封装运行,返回：数或寄存器，是否含有变量
 def runConstantExpression(constantExpression, number, symRead,reg,nid,vQs):
     if len(constantExpression)==1:
         a=constantExpression[0]
         if a==10:
             vQs.getNext()
-            b = reg.getID()
-            if vQs.getReg() != 0:
-                # %5 = load i32, i32* %2
-                print("%" + str(b) + " = load i32, i32* %" + str(vQs.getReg()))  # 准备
-                return "%"+str(b)
+            if vQs.getType() == 10 and vQs.getReg() != 0:
+                b = reg.getID()
+                if vQs.getReg() != 0:
+                    # %5 = load i32, i32* %2
+                    print("%" + str(b) + " = load i32, i32* %" + str(vQs.getReg()))  # 准备
+                    return "%"+str(b),True
+            elif vQs.getType()==20 and vQs.getNum()!="":
+                return vQs.getNum(),False
             else:
                 print("错误：未定义的变量！")
                 exit(1)
         elif a==20:
             c=number[nid.getID()]
-            return c
+            return c,False
     else:
-        handleConstantExpression(translateConstantExpression(constantExpression, number, symRead,nid,vQs,reg), 0,reg)
-        return "%"+str(reg.readID())
+        a,b=translateConstantExpression(constantExpression, number, symRead,nid,vQs,reg)
+        handleConstantExpression(a, 0,reg)
+        return "%"+str(reg.readID()),b

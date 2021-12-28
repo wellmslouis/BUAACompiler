@@ -1,3 +1,3 @@
 FROM python:3.9
 WORKDIR /app/
-COPY <源代码> ./
+COPY main.py syntaxAnalysis.py lexicalAnalysis.py constantExpression.py register.py variableQuantity.py process.py ./

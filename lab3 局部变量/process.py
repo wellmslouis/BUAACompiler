@@ -109,7 +109,9 @@ def sentenceBProcess(a,vQs,reg,number,symRead,nid):
             else:
                 vQs.getLast()
         if func==False:
-            valueR.append(runConstantExpression(right,number, symRead,reg,nid,vQs))
+            valueA,valueB=runConstantExpression(right,number, symRead,reg,nid,vQs)
+            valueR.append(valueA)
+            valueR.append(valueB)
     if idL!=-1:#不是函数
         if len(right)!=0:
             #int类型已定义
@@ -117,9 +119,16 @@ def sentenceBProcess(a,vQs,reg,number,symRead,nid):
                 #store i32 % 2, i32 * % 1
                 print("store i32 "+str(valueR[0])+", i32* %"+str(vQs.getRegForID(idL)))
             #const类型无值
-            elif vQs.getTypeForID(idL)==20 and vQs.getNumForID(idL)=="":
-                #!没有解决右边可能是变量的问题
-                vQs.setNumForID(valueR[0],idL)
+            elif vQs.getTypeForID(idL)==20:
+                if vQs.getNumForID(idL)=="":
+                    if len(valueR)>1:
+                        if valueR[1]:
+                            print("错误：使用变量为常量赋值！")
+                            exit(1)
+                    vQs.setNumForID(valueR[0],idL)
+                else:
+                    print("错误：常量已赋值！")
+                    exit(1)
 
 
 
@@ -165,9 +174,9 @@ def equalLeft(left,vQs,reg,number, symRead,nid):
             while left[i]!=32:#不到右括号
                 b.append(left[i])
                 i+=1
-            value=runConstantExpression(b,number, symRead,reg,nid,vQs)
+            valueA,valueB=runConstantExpression(b,number, symRead,reg,nid,vQs)
             #call void @ putint(i32 % 4)
-            print("call void @putint(i32 "+str(value)+")")
+            print("call void @putint(i32 "+str(valueA)+")")
             return -1
         elif vQs.matchName("putch"):
             i = 2
@@ -175,9 +184,9 @@ def equalLeft(left,vQs,reg,number, symRead,nid):
             while left[i] != 32:  # 不到右括号
                 b.append(left[i])
                 i+=1
-            value = runConstantExpression(b, number, symRead, reg, nid, vQs)
+            valueA,valueB = runConstantExpression(b, number, symRead, reg, nid, vQs)
             # call void @ putint(i32 % 4)
-            print("call void @putch(i32 " + str(value) + ")")
+            print("call void @putch(i32 " + str(valueA) + ")")
             return -1
         else:
             return vQs.getID()
@@ -190,5 +199,5 @@ def returnProcess(a, number, symRead, reg, nid, vQs):
         while a[i]!=34:
             b.append(a[i])
             i+=1
-        value = runConstantExpression(b, number, symRead, reg, nid, vQs)
-        print("ret i32 " + str(value))
+        valueA,valueB = runConstantExpression(b, number, symRead, reg, nid, vQs)
+        print("ret i32 " + str(valueA))
