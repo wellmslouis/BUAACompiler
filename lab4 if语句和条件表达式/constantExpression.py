@@ -59,8 +59,8 @@ def handleConstantExpression(a,b,reg):
             g=True
             if not isCounted:
                 if c[j]=="*" or c[j]=="/" or c[j]=="%":
-                    if j<len(c)-1 and c[j+1]!="+" and c[j+1]!="-" and c[j+1]!="*" and c[j+1]!="/" and c[j+1]!="%":
-                        if j-1>=0 and (c[j-1]!="+" and c[j-1]!="-" and c[j-1]!="*" and c[j-1]!="/" and c[j-1]!="%"):
+                    if j<len(c)-1 and c[j+1]!="+" and c[j+1]!="-" and c[j+1]!="!" and c[j+1]!="*" and c[j+1]!="/" and c[j+1]!="%":
+                        if j-1>=0 and (c[j-1]!="+" and c[j-1]!="-" and c[j-1]!="!" and c[j-1]!="*" and c[j-1]!="/" and c[j-1]!="%"):
                                 f.pop()
                                 f.append(printConstantExpression(c[j],c[j-1],c[j+1],reg))
                                 isCounted=True
@@ -76,9 +76,9 @@ def handleConstantExpression(a,b,reg):
         while j<len(c):
             g=True
             if not isCounted:
-                if c[j]=="+" or c[j]=="-":
-                    if j<len(c)-1 and c[j+1]!="+" and c[j+1]!="-" and c[j+1]!="*" and c[j+1]!="/" and c[j+1]!="%":
-                        if j-1>=0 and (c[j-1]!="+" and c[j-1]!="-" and c[j-1]!="*" and c[j-1]!="/" and c[j-1]!="%"):
+                if c[j]=="+" or c[j]=="-" or c[j]=="!":
+                    if j<len(c)-1 and c[j+1]!="+" and c[j+1]!="-" and c[j+1]!="!" and c[j+1]!="*" and c[j+1]!="/" and c[j+1]!="%":
+                        if j-1>=0 and (c[j-1]!="+" and c[j-1]!="-" and c[j-1]!="!" and c[j-1]!="*" and c[j-1]!="/" and c[j-1]!="%"):
                                 f.pop()
                                 f.append(printConstantExpression(c[j],c[j-1],c[j+1],reg))
                                 isCounted = True
@@ -107,6 +107,21 @@ def printConstantExpression(sym,a,b,reg):
         d+="sdiv"
     elif sym=="%":
         d+="srem"
+    elif sym=="!":
+        # d+="miao"
+        #     icmp eq i32 %2, 0
+        d+="icmp eq i32 "
+        d += str(a)
+        d += ","
+        d += str(b)
+        d+='\n'
+        e="%"+str(reg.getID())
+        d+=e
+        d+="=zext i1 "
+        d+=c
+        d+=" to i32"
+        print(d)
+        return e
     d+=" i32 "
     d+=str(a)
     d+=","
