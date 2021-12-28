@@ -5,7 +5,7 @@ class variableQuantity:
         self.register=0#寄存器
         #self.load=0
         self.type=0#数据类型 10是int 20是const int
-        self.numConst=0#仅供常量使用的数据存储
+        self.numConst=""#仅供常量使用的数据存储
 
     def store(self, registerInput):
         self.register= registerInput
@@ -21,6 +21,12 @@ class variableQuantity:
 
     def getName(self):
         return self.name
+
+    def setNum(self,numInput):
+        self.numConst+=numInput
+
+    def getNum(self):
+        return self.numConst
 
 
 class variableQuantitys:
@@ -108,4 +114,12 @@ class variableQuantitys:
 
     def getTypeForID(self,id):
         a = self.order[id]
-        self.array[a].getType()
+        return self.array[a].getType()
+
+    def setNumForID(self,n,id):
+        a = self.order[id]
+        self.array[a].setNum(n)
+
+    def getNumForID(self,id):
+        a = self.order[id]
+        return self.array[a].getNum()

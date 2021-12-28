@@ -1,7 +1,10 @@
 import sys
+
+from register import register,nid
 from syntaxAnalysis import CompUnit
 from constantExpression import runConstantExpression
 from variableQuantity import variableQuantitys
+from process import paragraphProcess
 
 
 if __name__ == '__main__':
@@ -11,11 +14,10 @@ if __name__ == '__main__':
     # for l in sys.stdin:
     #     procedure += l
     # 测试读入
-    with open("test/testF.txt", "r") as f:
+    with open("test/testA.txt", "r") as f:
         procedure = f.read()
     #print(procedure.replace("[]","\n"))
     number = []
-    nid=0
     vQs=variableQuantitys()
     print_ = []
     # 类别码-读取字典
@@ -48,19 +50,7 @@ if __name__ == '__main__':
     if not a:
         exit(1)
 
-    # if CompUnit(procedure, number, print_):
-    #     # print(print_)
-    #     print("define dso_local i32 @main() {")
-    #     constantExpression = []
-    #     a = False
-    #     for i in range(len(print_)):
-    #         if print_[i] == 13:
-    #             a = True
-    #             continue
-    #         if print_[i] == 34:
-    #             a = False
-    #         if a:
-    #             constantExpression.append(print_[i])
-    #     runConstantExpression(constantExpression, number, symRead)
-    # else:
-    #     exit(1)
+    reg = register()
+    nid=nid()
+
+    paragraphProcess(print_,vQs,reg,number,symRead,nid)

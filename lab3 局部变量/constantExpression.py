@@ -5,8 +5,7 @@ def translateConstantExpression(pr,n,symRead,nid,vQs,reg):
     a=[]
     for i in range(len(pr)):
         if pr[i]==20:
-            a.append(n[nid])
-            nid+=1
+            a.append(n[nid.getID()])
         elif pr[i]==10:
             vQs.getNext()
             b=reg.getID()
@@ -121,16 +120,14 @@ def runConstantExpression(constantExpression, number, symRead,reg,nid,vQs):
             b = reg.getID()
             if vQs.getReg() != 0:
                 # %5 = load i32, i32* %2
-                print("%" + b + " = load i32, i32* %" + vQs.getReg())  # 准备
+                print("%" + str(b) + " = load i32, i32* %" + str(vQs.getReg()))  # 准备
                 return "%"+str(b)
             else:
                 print("错误：未定义的变量！")
                 exit(1)
         elif a==20:
-            c=number[nid]
-            nid += 1
+            c=number[nid.getID()]
             return c
     else:
         handleConstantExpression(translateConstantExpression(constantExpression, number, symRead,nid,vQs,reg), 0,reg)
-        #print("\tret i32 %" + str(reg.readID()))
         return "%"+str(reg.readID())
