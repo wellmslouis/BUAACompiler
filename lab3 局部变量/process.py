@@ -174,6 +174,7 @@ def equalLeft(left,vQs,reg,number, symRead,nid):
             b = []  # 函数参数
             while left[i] != 32:  # 不到右括号
                 b.append(left[i])
+                i+=1
             value = runConstantExpression(b, number, symRead, reg, nid, vQs)
             # call void @ putint(i32 % 4)
             print("call void @putch(i32 " + str(value) + ")")
