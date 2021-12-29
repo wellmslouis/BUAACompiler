@@ -25,11 +25,12 @@ class llvmBlock:
             #br i1 %7,label %8, label %10
             print("\t"+"br i1 %"+str(self.brA)+",label %"+str(self.brT)+",label %"+str(self.brF))
         elif self.brB!=0:
-            valueA,valueB=self.formatBrB()
-            if valueA==0:
-                print("\t"+"br label %"+str(self.brB))
-            else:
-                return False,valueA,valueB
+            if len(self.print_)==0 or not self.print_[-1].startswith("ret"):
+                valueA,valueB=self.formatBrB()
+                if valueA==0:
+                    print("\t"+"br label %"+str(self.brB))
+                else:
+                    return False,valueA,valueB
         return True,0,'A'
 
     def setBrA(self,brInput):
