@@ -15,7 +15,7 @@ if __name__ == '__main__':
     for l in sys.stdin:
         procedure += l
     # 测试读入
-    # with open("test/testC.txt", "r") as f:
+    # with open("test/testB.txt", "r") as f:
     #     procedure = f.read()
     # print(procedure.replace("[]","\n"))
     number = []

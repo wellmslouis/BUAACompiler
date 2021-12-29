@@ -47,11 +47,11 @@ def conditionOr(bid,right, vQs, reg, number, symRead, nid,llvm):
     llvm.setBrF(bid,bidAF)
     conditionA(right,vQs, reg, number, symRead, nid,llvm,bidAF)
     bidAT = reg.getID()
-    a = str(bidAF) + "!T"
+    # a = str(bidAF) + "!T"
     llvm.setBrT(bid, bidAT)
-    llvm.setBrB(bidAT, a)
+    # llvm.setBrB(bidAT, a)
     # llvm.addPrintByID(bidAT, "br label %"+str(bidBT))
-    return bidAF
+    return bidAF,bidAT
 
 #且表达式
 def conditionAnd(bid ,right, vQs, reg, number, symRead, nid,llvm):
@@ -68,6 +68,7 @@ def conditionAnd(bid ,right, vQs, reg, number, symRead, nid,llvm):
 #封装条件表达式
 def handleCondition(c, vQs, reg, number, symRead, nid,llvm,bid):
     bidC=bid
+    bidT=[]
     i=0
     a=[]
     b=[]
@@ -88,9 +89,13 @@ def handleCondition(c, vQs, reg, number, symRead, nid,llvm,bid):
     j+=1
     while j<len(b):
         if b[j]==314:
-            bidC=conditionOr(bidC,b[j+1], vQs, reg, number, symRead, nid, llvm)
+            bidC,newBidT=conditionOr(bidC,b[j+1], vQs, reg, number, symRead, nid, llvm)
+            bidT.append(newBidT)
         elif b[j]==315:
             bidC=conditionAnd(bidC, b[j + 1], vQs, reg, number, symRead, nid, llvm)
         j+=2
-
+    if len(bidT)>0:
+        e = str(bidC) + "!T"
+        for k in bidT:
+            llvm.setBrB(k, e)
     return bidC
