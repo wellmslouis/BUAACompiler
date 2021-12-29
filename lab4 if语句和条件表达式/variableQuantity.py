@@ -64,7 +64,7 @@ class variableQuantitys:
     def getNext(self):
         self.id += 1
         #test
-        print("get "+self.getName())
+        # print("get "+self.getName())
 
     # 上一个变量
     def getLast(self):

@@ -225,8 +225,9 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid):
                     break
                 i+=1
             condition.pop()
-    bidT,bidF=handleCondition(condition,vQs, reg, number, symRead, nid,llvm,bid)
-
+    bidN=handleCondition(condition,vQs, reg, number, symRead, nid,llvm,bid)
+    bidNT=reg.getID()
+    llvm.setBrT(bidN,bidNT)
     i+=1
     if pr[i]==33:
         braces=[1]#大括号栈，左1右2
@@ -242,21 +243,23 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid):
                 break
             i+=1
         a.pop()#最后一个}推出去
-        bidCT=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidT)
+        bidCT=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT)
     elif pr[i]==15:
-        i,bidCT=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidT)
+        i,bidCT=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT)
     else:
         a=[]
         while i<len(pr):
             a.append(pr[i])
             if pr[i] == 34:
                 if a[0] == 13:
-                    returnProcess(a, number, symRead, reg, nid, vQs,llvm,bidT)
+                    returnProcess(a, number, symRead, reg, nid, vQs,llvm,bidNT)
                 else:
-                    sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bidT)
+                    sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT)
                 break
             i+=1
     i+=1
+    bidNF = reg.getID()
+    llvm.setBrF(bidN, bidNF)
     if i<len(pr) and pr[i]==16:#else
         i+=1
         if pr[i] == 33:
@@ -276,29 +279,31 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid):
                     break
                 i += 1
             a.pop()  # 最后一个}推出去
-            bidCF=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidF)
+            bidCF=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNF)
         elif pr[i] == 15:
-            i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidF)
+            i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF)
         else:
             a = []
             while i < len(pr):
                 a.append(pr[i])
                 if pr[i] == 34:
                     if a[0] == 13:
-                        returnProcess(a, number, symRead, reg, nid, vQs,llvm,bidF)
+                        returnProcess(a, number, symRead, reg, nid, vQs,llvm,bidNF)
                     else:
-                        sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bidF)
+                        sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bidNF)
                     break
                 i += 1
     else:
         i-=1
     newBID=reg.getID()
     if bidCT==0:
-        llvm.addPrintByID(bidT,"br label %"+str(newBID))
+        # llvm.addPrintByID(bidT,"br label %"+str(newBID))
+        llvm.setBrB(bidNT,newBID)
     else:
-        llvm.addPrintByID(bidCT, "br label %" + str(newBID))
+        # llvm.addPrintByID(bidCT, "br label %" + str(newBID))
+        llvm.setBrB(bidCT, newBID)
     if bidCF==0:
-        llvm.addPrintByID(bidF, "br label %" + str(newBID))
+        llvm.setBrB(bidNF, newBID)
     else:
-        llvm.addPrintByID(bidCF, "br label %" + str(newBID))
+        llvm.setBrB(bidCF,newBID)
     return i,newBID

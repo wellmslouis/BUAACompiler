@@ -8,6 +8,11 @@ class register:
         self.id+=1
         return a
 
+    def ungetID(self):
+        self.id-=1
+        a=self.id-1
+        return a
+
     def readID(self):
         return self.id-1
 

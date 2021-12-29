@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # for l in sys.stdin:
     #     procedure += l
     # 测试读入
-    with open("test/testK.txt", "r") as f:
+    with open("test/testH.txt", "r") as f:
         procedure = f.read()
     # print(procedure.replace("[]","\n"))
     number = []
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         60: "Finish"
     }
     a=CompUnit(procedure, number, print_,vQs)
-    print(print_)
+    # print(print_)
     # print(print_[len(print_)-1])
     # vQs.printQs()
     if not a:
