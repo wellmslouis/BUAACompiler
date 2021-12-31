@@ -1,8 +1,6 @@
 import sys
 
 from register import register,nid
-from syntaxAnalysis import CompUnit
-from constantExpression import runConstantExpression
 from process import paragraphProcess,layerProcess
 from llvm import llvm
 
@@ -55,31 +53,30 @@ if __name__ == '__main__':
     reg = register()
     nid=nid()
     llvm=llvm()
-    # vQL=vQLayer()
 
     number,print_,vQL=layerProcess(procedure)
-    vQL.print_()
+    # vQL.print_()
 
 
 
-    # if vQs.selectName("getint"):
-    #     print("declare i32 @getint()")
-    # if vQs.selectName("getch"):
-    #     print("declare i32 @getch()")
-    # if vQs.selectName("putint"):
-    #     print("declare void @putint(i32)")
-    # if vQs.selectName("putch"):
-    #     print("declare void @putch(i32)")
-    # print("define dso_local i32 @main(){")
-    # # 去除main函数外层
-    # b=len(print_)-1
-    # print_A=print_[5:b]
-    # # print(print_A)
-    # paragraphProcess(print_A, vQs, reg, number, symRead, nid, llvm, 0,1)
-    # llvm.printAll()
-    # # try:
-    # #     paragraphProcess(print_A,vQs,reg,number,symRead,nid,llvm,0)
-    # #     llvm.printAll()
-    # # except:
-    # #     llvm.printAll()
-    # print("}")
+    if vQL.selectName("getint"):
+        print("declare i32 @getint()")
+    if vQL.selectName("getch"):
+        print("declare i32 @getch()")
+    if vQL.selectName("putint"):
+        print("declare void @putint(i32)")
+    if vQL.selectName("putch"):
+        print("declare void @putch(i32)")
+    print("define dso_local i32 @main(){")
+    # 去除main函数外层
+    b=len(print_)-1
+    print_A=print_[5:b]
+    # print(print_A)
+    paragraphProcess(print_A, vQL, reg, number, symRead, nid, llvm, 0,1)
+    llvm.printAll()
+    # try:
+    #     paragraphProcess(print_A,vQs,reg,number,symRead,nid,llvm,0)
+    #     llvm.printAll()
+    # except:
+    #     llvm.printAll()
+    print("}")

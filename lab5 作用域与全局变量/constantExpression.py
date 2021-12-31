@@ -1,25 +1,33 @@
 #常量表达式
 
 #翻译
-def translateConstantExpression(pr,n,symRead,nid,vQs,reg,llvm,bid):
+def translateConstantExpression(pr,n,symRead,nid,vQs,reg,llvm,bid,layer):
     a=[]
     haveVQ=False
     for i in range(len(pr)):
         if pr[i]==20:
             a.append(n[nid.getID()])
         elif pr[i]==10:
-            vQs.getNext()
-            if vQs.getType()==10 and vQs.getReg()!=0:
-                # %5 = load i32, i32* %2
+            vQs.getNext(layer)
+            # if vQs.getType(layer)==10 and vQs.getReg(layer)!=0:
+            #     # %5 = load i32, i32* %2
+            #     b = reg.getID()
+            #     llvm.addPrintByID(bid,"%"+str(b)+" = load i32, i32* %"+str(vQs.getReg(layer)))#准备
+            #     a.append("%"+str(b))
+            #     haveVQ=True
+            # elif vQs.getType(layer)==20 and vQs.getNum(layer)!="":
+            #     a.append(vQs.getNum(layer))
+            # else:
+            #     print("错误：未定义的变量！")
+            #     exit(1)
+            r=vQs.getValue(layer)
+            if r["type"]==1:
                 b = reg.getID()
-                llvm.addPrintByID(bid,"%"+str(b)+" = load i32, i32* %"+str(vQs.getReg()))#准备
+                llvm.addPrintByID(bid, "%" + str(b) + " = load i32, i32* %" + str(r["reg"]))  # 准备
                 a.append("%"+str(b))
                 haveVQ=True
-            elif vQs.getType()==20 and vQs.getNum()!="":
-                a.append(vQs.getNum())
-            else:
-                print("错误：未定义的变量！")
-                exit(1)
+            elif r["type"]==2:
+                a.append(r["num"])
         else:
             a.append(symRead[pr[i]])
     # print(a)
@@ -130,19 +138,19 @@ def printConstantExpression(sym,a,b,reg,llvm,bid):
     return c
 
 #封装运行,返回：数或寄存器，是否含有变量
-def runConstantExpression(constantExpression, number, symRead,reg,nid,vQs,llvm,bid):
+def runConstantExpression(constantExpression, number, symRead,reg,nid,vQs,llvm,bid,layer):
     if len(constantExpression)==1:
         a=constantExpression[0]
         if a==10:
-            vQs.getNext()
-            if vQs.getType() == 10 and vQs.getReg() != 0:
+            vQs.getNext(layer)
+            if vQs.getType(layer) == 10 and vQs.getReg(layer) != 0:
                 b = reg.getID()
-                if vQs.getReg() != 0:
+                if vQs.getReg(layer) != 0:
                     # %5 = load i32, i32* %2
-                    llvm.addPrintByID(bid,"%" + str(b) + " = load i32, i32* %" + str(vQs.getReg()))#准备
+                    llvm.addPrintByID(bid,"%" + str(b) + " = load i32, i32* %" + str(vQs.getReg(layer)))#准备
                     return "%"+str(b),True
-            elif vQs.getType()==20 and vQs.getNum()!="":
-                return vQs.getNum(),False
+            elif vQs.getType(layer)==20 and vQs.getNum(layer)!="":
+                return vQs.getNum(layer),False
             else:
                 print("错误：未定义的变量！")
                 exit(1)
@@ -150,6 +158,6 @@ def runConstantExpression(constantExpression, number, symRead,reg,nid,vQs,llvm,b
             c=number[nid.getID()]
             return c,False
     else:
-        a,b=translateConstantExpression(constantExpression, number, symRead,nid,vQs,reg,llvm,bid)
+        a,b=translateConstantExpression(constantExpression, number, symRead,nid,vQs,reg,llvm,bid,layer)
         handleConstantExpression(a, 0,reg,llvm,bid)
         return "%"+str(reg.readID()),b
