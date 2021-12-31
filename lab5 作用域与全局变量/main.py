@@ -8,12 +8,12 @@ from llvm import llvm
 if __name__ == '__main__':
     # 程序存在于这个字符串中
     # 标准读入
-    # procedure = ""
-    # for l in sys.stdin:
-    #     procedure += l
+    procedure = ""
+    for l in sys.stdin:
+        procedure += l
     # 测试读入
-    with open("test/testA.txt", "r") as f:
-        procedure = f.read()
+    # with open("test/testC.txt", "r") as f:
+    #     procedure = f.read()
     # print(procedure.replace("[]","\n"))
     # number = []
     # rvQs=rawVQs()

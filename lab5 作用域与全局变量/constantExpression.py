@@ -143,17 +143,13 @@ def runConstantExpression(constantExpression, number, symRead,reg,nid,vQs,llvm,b
         a=constantExpression[0]
         if a==10:
             vQs.getNext(layer)
-            if vQs.getType(layer) == 10 and vQs.getReg(layer) != 0:
+            r = vQs.getValue(layer)
+            if r["type"] == 1:
                 b = reg.getID()
-                if vQs.getReg(layer) != 0:
-                    # %5 = load i32, i32* %2
-                    llvm.addPrintByID(bid,"%" + str(b) + " = load i32, i32* %" + str(vQs.getReg(layer)))#准备
-                    return "%"+str(b),True
-            elif vQs.getType(layer)==20 and vQs.getNum(layer)!="":
-                return vQs.getNum(layer),False
-            else:
-                print("错误：未定义的变量！")
-                exit(1)
+                llvm.addPrintByID(bid, "%" + str(b) + " = load i32, i32* %" + str(r["reg"]))  # 准备
+                return "%" + str(b), True
+            elif r["type"] == 2:
+                return r["num"]
         elif a==20:
             c=number[nid.getID()]
             return c,False

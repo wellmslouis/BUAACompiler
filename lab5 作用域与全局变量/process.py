@@ -45,10 +45,16 @@ def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer):
         elif pr[i]==33:#{
             a.pop()
             b=[]
+            braces=[1]
             i+=1
-            while pr[i]!=35:
+            while len(braces)!=0:
+                if pr[i]==33:
+                    braces.append(1)
+                elif pr[i]==35:
+                    braces.pop()
                 b.append(pr[i])
                 i+=1
+            b.pop()
             curBID=paragraphProcess(b,vQs, reg, number, symRead, nid,llvm,curBID,layer+1)
         i += 1
     return curBID
