@@ -6,7 +6,7 @@
 
 ## part分解
 
-### 未修改内容
+### 未修改part
 
 > 词法分析	exicalAnalysis.py
 >
@@ -18,7 +18,7 @@
 >
 > 变量	variableQuantity.py
 
-### 修改或新增内容
+### 修改或新增part
 
 #### 输出
 
