@@ -55,7 +55,9 @@ def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 b.append(pr[i])
                 i+=1
             b.pop()
+            i-=1
             curBID=paragraphProcess(b,vQs, reg, number, symRead, nid,llvm,curBID,layer+1)
+            vQs.delete(layer+1)
         i += 1
     return curBID
 
@@ -285,8 +287,10 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
             i+=1
         a.pop()#最后一个}推出去
         bidCT=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        vQs.delete(layer + 1)
     elif pr[i]==15:
         i,bidCT=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        vQs.delete(layer + 1)
     #！待完善：不含大括号的定义
     else:
         a=[]
@@ -295,8 +299,10 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
             if pr[i] == 34:
                 if a[0] == 13:
                     returnProcess(a, number, symRead, reg, nid, vQs,llvm,bidNT,layer+1)
+                    vQs.delete(layer + 1)
                 else:
                     sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+                    vQs.delete(layer + 1)
                 break
             i+=1
     i+=1
@@ -322,8 +328,10 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 i += 1
             a.pop()  # 最后一个}推出去
             bidCF=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
+            vQs.delete(layer + 1)
         elif pr[i] == 15:
             i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
+            vQs.delete(layer + 1)
         else:
             a = []
             while i < len(pr):
@@ -331,8 +339,10 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 if pr[i] == 34:
                     if a[0] == 13:
                         returnProcess(a, number, symRead, reg, nid, vQs,llvm,bidNF,layer+1)
+                        vQs.delete(layer + 1)
                     else:
                         sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
+                        vQs.delete(layer + 1)
                     break
                 i += 1
     else:

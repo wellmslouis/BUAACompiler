@@ -27,12 +27,22 @@ class variableQuantity:
     def getNum(self):
         return self.numConst
 
+    def delete(self):
+        self.register = 0  # 寄存器
+        self.type = 0  # 数据类型 10是int 20是const int
+        self.numConst = ""  # 仅供常量使用的数据存储
+
 
 class variableQuantitys:
     def __init__(self):
         self.array = []  # 存储所有变量
         self.order = []  # 存储变量顺序
         self.id = -1
+
+    def delete(self):
+        for i in range(self.id+1):
+            a = self.order[i]
+            self.array[a].delete()
 
     def addNewVQ(self, nameInput):
         vQ = variableQuantity(nameInput)
@@ -179,6 +189,9 @@ class vQLayer:
         for i in range(len(self.array)):
             print(str(i) + ":")
             self.array[i].printQs()
+    #清除同层前述变量
+    def delete(self,layerInput):
+        self.array[layerInput].delete()
 
     def selectName(self, nameInput):
         for i in self.array:
