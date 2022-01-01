@@ -24,9 +24,27 @@ def layerProcess(procedure):
             v.add(rvQs.getName(),layer)
     return number,print_,v
 
+def process(pr, vQs, reg, number, symRead, nid,llvm):
+    i=0
+    while pr[i]!=11 or pr[i+1]!=12:
+        a=[]
+        while pr[i]!=34:
+            a.append(pr[i])
+            i+=1
+        a.append(pr[i])
+        i+=1
+        globalProcess(a, vQs, reg, number, symRead, nid,llvm)
+    prA=pr[i:]
+    b = len(prA) - 1
+    prB=prA[5:b]
+    paragraphProcess(prB, vQs, reg, number, symRead, nid,llvm,0,1)
+
+#全局变量处理
+def globalProcess(pr, vQs, reg, number, symRead, nid,llvm):
+    sentenceAProcess(pr, vQs, reg, number, symRead, nid, llvm,0,0)
 
 # 段落处理
-#特别的，对于段落处理，会遍历所有传入代码，所以传入前必须进行拆分
+#特别的，对于段落处理，会遍历所有传入代码，所以传入前必须进行拆分（能运行到结尾）
 def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer):
     curBID=bid
     a = []
@@ -164,6 +182,9 @@ def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
             #     else:
             #         print("错误：常量已赋值！")
             #         exit(1)
+            if layer==0 and valueR[1]:
+                print("错误：使用变量为全局变量赋值！")
+                exit(1)
             if len(valueR)>1:
                 a=vQs.assign(layer,idL,valueR[0],valueR[1])
             else:
