@@ -1,0 +1,298 @@
+# 词法分析
+from variableQuantity import *
+
+# 读取到程序的哪一个字符
+keyForProcedure = 0
+usedKeyForProcedure = []
+gotSym = []
+
+# 程序读完
+readAllProcedure = False
+
+
+# 读取程序的下一个字符
+def getC(procedure):
+    global keyForProcedure
+    global readAllProcedure
+    keyForProcedure += 1
+    if keyForProcedure - 1 >= len(procedure):
+        readAllProcedure = True
+        return "\n"
+    return procedure[keyForProcedure - 1]
+
+
+# 读取程序的上一个字符
+def ungetC(procedure):
+    global keyForProcedure
+    keyForProcedure -= 1
+    return procedure[keyForProcedure - 1]
+
+
+# 查找保留字对应的类别码，如果不是保留字返回10
+def getSymForReservedWord(token, vQs):
+    if token == "int":
+        return 11
+    elif token == "main":
+        return 12
+    elif token == "return":
+        return 13
+    elif token == "const":
+        return 14
+    elif token == "if":
+        return 15
+    elif token == "else":
+        return 16
+    elif token=="while":
+        return 17
+    else:
+        vQs.addNewQ(token)
+        return 10
+
+
+# 八进制转十进制
+def octalToDecimal(token):
+    a = len(token) - 1
+    b = 0
+    for i in range(len(token)):
+        b += int(token[i]) * (8 ** a)
+        a -= 1
+    return b
+
+
+# 十六进制转十进制
+def hexadecimalToDecimal(token):
+    a = len(token) - 1
+    b = 0
+    c = 0
+    for i in range(len(token)):
+        if token[i] == "a" or token[i] == "A":
+            c = 10
+        elif token[i] == "b" or token[i] == "B":
+            c = 11
+        elif token[i] == "c" or token[i] == "C":
+            c = 12
+        elif token[i] == "d" or token[i] == "D":
+            c = 13
+        elif token[i] == "e" or token[i] == "E":
+            c = 14
+        elif token[i] == "f" or token[i] == "F":
+            c = 15
+        else:
+            c = int(token[i])
+        b += c * (16 ** a)
+        a -= 1
+    return b
+
+
+# 读入一个单词
+def getSym(procedure, number, vQs):
+    global keyForProcedure
+    global readAllProcedure
+    global usedKeyForProcedure
+    global gotSym
+    a = getC(procedure)
+    while a == " " or a == "\n" or a == "\t" or a == "\r":
+        if readAllProcedure:
+            gotSym.append(60)
+            return 60
+        a = getC(procedure)
+    usedKeyForProcedure.append(keyForProcedure - 1)
+    token = ""
+    if a.isalpha() or a == "_":
+        token += a
+        b = getC(procedure)
+        while b.isalpha() or b.isdigit() or b == "_":
+            token += b
+            b = getC(procedure)
+        ungetC(procedure)
+        c = getSymForReservedWord(token, vQs)
+        gotSym.append(c)
+        return c
+    elif a.isdigit():
+        if a == "0":  # 八进制或十六进制或0
+            b = getC(procedure)
+            if b == "x" or b == "X":  # 十六进制
+                c = getC(procedure)
+                while c.isdigit() or c.isalpha():
+                    if c.isdigit() or c == "a" or c == "b" or c == "c" or c == "d" or c == "e" or c == "f" or c == "A" or c == "B" or c == "C" or c == "D" or c == "E" or c == "F":
+                        token += c
+                        c = getC(procedure)
+                    else:
+                        gotSym.append(40)
+                        return 40
+                ungetC(procedure)
+                number.append(hexadecimalToDecimal(token))
+                gotSym.append(20)
+                return 20
+            elif b.isdigit():  # 八进制
+                if 0 <= int(b) <= 7:
+                    token += b
+                    c = getC(procedure)
+                    while c.isdigit() or c.isalpha():
+                        if c.isalpha() or int(c) > 7:
+                            return 40
+                        token += c
+                        c = getC(procedure)
+                    ungetC(procedure)
+                    number.append(octalToDecimal(token))
+                    gotSym.append(20)
+                    return 20
+                else:
+                    gotSym.append(40)
+                    return 40
+            else:
+                number.append(a)
+                ungetC(procedure)
+                gotSym.append(20)
+                return 20
+        else:  # 十进制
+            token += a
+            b = getC(procedure)
+            while b.isdigit() or b.isalpha():
+                if b.isalpha():
+                    gotSym.append(40)
+                    return 40
+                token += b
+                b = getC(procedure)
+            ungetC(procedure)
+            number.append(token)
+            gotSym.append(20)
+            return 20
+    elif a == "(":
+        gotSym.append(31)
+        return 31
+    elif a == ")":
+        gotSym.append(32)
+        return 32
+    elif a == "{":
+        gotSym.append(33)
+        return 33
+    elif a == ";":
+        gotSym.append(34)
+        return 34
+    elif a == "}":
+        gotSym.append(35)
+        return 35
+    elif a == "+":
+        gotSym.append(36)
+        return 36
+    elif a == "-":
+        gotSym.append(37)
+        return 37
+    elif a == "*":
+        gotSym.append(38)
+        return 38
+    elif a == "/":
+        b = getC(procedure)
+        if b == "/":
+            c = getC(procedure)
+            while c != "\n":
+                c = getC(procedure)
+            ungetC(procedure)
+        elif b == "*":
+            c = getC(procedure)
+            d = getC(procedure)
+            while c != "*" or d != "/":
+                if readAllProcedure:
+                    gotSym.append(40)
+                    return 40
+                ungetC(procedure)
+                c = getC(procedure)
+                d = getC(procedure)
+        else:
+            ungetC(procedure)
+            gotSym.append(39)
+            return 39
+        gotSym.append(50)
+        return getSym(procedure, number,vQs)
+    elif a == "%":
+        gotSym.append(310)
+        return 310
+    elif a == ",":
+        gotSym.append(311)
+        return 311
+    elif a == "=":
+        b = getC(procedure)
+        if b == "=":
+            gotSym.append(316)
+            return 316
+        else:
+            ungetC(procedure)
+            gotSym.append(312)
+            return 312
+    elif a == "!":
+        b = getC(procedure)
+        if b=="=":
+            gotSym.append(317)
+            return 317
+        else:
+            ungetC(procedure)
+            gotSym.append(313)
+            return 313
+    elif a=="|":
+        b = getC(procedure)
+        if b == "|":
+            gotSym.append(314)
+            return 314
+        else:
+            gotSym.append(40)
+            return 40
+    elif a=="&":
+        b = getC(procedure)
+        if b == "&":
+            gotSym.append(315)
+            return 315
+        else:
+            gotSym.append(40)
+            return 40
+    elif a == "<":
+        b = getC(procedure)
+        if b == "=":
+            gotSym.append(320)
+            return 320
+        else:
+            ungetC(procedure)
+            gotSym.append(318)
+            return 318
+    elif a == ">":
+        b = getC(procedure)
+        if b == "=":
+            gotSym.append(321)
+            return 321
+        else:
+            ungetC(procedure)
+            gotSym.append(319)
+            return 319
+    else:
+        gotSym.append(40)
+        return 40
+
+
+# 退回一个单词
+def ungetSym(n, v):
+    ungetTheSym(1, n, v)
+
+
+# 退回n个单词，栈
+def ungetTheSym(m, n, v):
+    global keyForProcedure, usedKeyForProcedure
+    a = len(usedKeyForProcedure) - m
+    if a < 0:
+        a = 0
+    keyForProcedure = usedKeyForProcedure[a]
+    # 退回读入的数字和标识符
+    for i in range(m):
+        #test
+        # print("gotSym=",end="")
+        # print(gotSym)
+        # print(usedKeyForProcedure)
+        # print(a)
+        # print(i)
+        # print(m)
+        if gotSym[a + i] == 20:
+            n.pop()
+        elif gotSym[a + i] == 10:
+            v.deleteLastQ()
+    for i in range(m):
+        usedKeyForProcedure.pop()
+        gotSym.pop()
