@@ -2,10 +2,19 @@
 from lexicalAnalysis import getSym, ungetSym, ungetTheSym
 
 
-# CompUnit -> FuncDef
+# CompUnit -> Decl* FuncDef
 def CompUnit(p, n, pr, v):
-    if FuncDef(p, n, pr, v):
-        return True
+    while True:
+        a = getSym(p, n, v)
+        b= getSym(p, n, v)
+        if a==11 and b==12:
+            ungetTheSym(2,n,v)
+            if FuncDef(p, n, pr, v):
+                return True
+        else:
+            ungetTheSym(2,n,v)
+            if Decl(p,n,pr,v):
+                continue
     return False
 
 
