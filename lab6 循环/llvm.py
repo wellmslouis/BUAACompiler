@@ -9,6 +9,8 @@ class llvmBlock:
         self.brF=0
         #一段跳转
         self.brB=0
+        #continue跳转
+        self.brC=0
 
     def getBID(self):
         return self.blockID
@@ -24,6 +26,8 @@ class llvmBlock:
         if self.brA!=0:
             #br i1 %7,label %8, label %10
             print("\t"+"br i1 %"+str(self.brA)+",label %"+str(self.brT)+",label %"+str(self.brF))
+        elif self.brC!=0:
+            print("\t" + "br label %" + str(self.brC))
         elif self.brB!=0:
             if len(self.print_)==0 or not self.print_[-1].startswith("ret"):
                 valueA,valueB=self.formatBrB()
@@ -57,6 +61,9 @@ class llvmBlock:
         else:
             a=str(self.brB).split('!')
             return int(a[0]),a[1]
+
+    def setBrC(self,brInput):
+        self.brC=brInput
 
 class llvm:
     def __init__(self):
@@ -124,3 +131,8 @@ class llvm:
         if not haveID:
             self.addBlock(bidInput)
             self.setBrB(bidInput,brInput)
+
+    def setBrC(self,bidInput,brInput):
+        for i in self.array:
+            if i.getBID() == bidInput:
+                i.setBrC(brInput)

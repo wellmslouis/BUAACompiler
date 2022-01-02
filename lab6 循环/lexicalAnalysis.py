@@ -44,6 +44,10 @@ def getSymForReservedWord(token, vQs):
         return 16
     elif token=="while":
         return 17
+    elif token=="continue":
+        return 18
+    elif token=="break":
+        return 19
     else:
         vQs.addNewQ(token)
         return 10

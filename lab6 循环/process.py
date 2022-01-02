@@ -37,7 +37,7 @@ def process(pr, vQs, reg, number, symRead, nid,llvm):
     prA=pr[i:]
     b = len(prA) - 1
     prB=prA[5:b]
-    paragraphProcess(prB, vQs, reg, number, symRead, nid,llvm,0,1)
+    paragraphProcess(prB, vQs, reg, number, symRead, nid,llvm,0,1,-1)
 
 #全局变量处理
 def globalProcess(pr, vQs, reg, number, symRead, nid,llvm):
@@ -45,7 +45,7 @@ def globalProcess(pr, vQs, reg, number, symRead, nid,llvm):
 
 # 段落处理
 #特别的，对于段落处理，会遍历所有传入代码，所以传入前必须进行拆分（能运行到结尾）
-def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer):
+def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer,whileConditionBID):
     curBID=bid
     a = []
     i = 0
@@ -59,7 +59,7 @@ def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer):
             a.clear()
         elif pr[i] == 15:
             a.pop()
-            i,curBID = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,curBID,layer)
+            i,curBID = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,curBID,layer,whileConditionBID)
         elif pr[i]==33:#{
             a.pop()
             b=[]
@@ -74,11 +74,15 @@ def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 i+=1
             b.pop()
             i-=1
-            curBID=paragraphProcess(b,vQs, reg, number, symRead, nid,llvm,curBID,layer+1)
+            curBID=paragraphProcess(b,vQs, reg, number, symRead, nid,llvm,curBID,layer+1,whileConditionBID)
             vQs.delete(layer+1)
         elif pr[i]==17:
             a.pop()
             i, curBID = conditionBProcess(pr, i, vQs, reg, number, symRead, nid, llvm, curBID, layer)
+        elif pr[i]==18:#continue
+            a.pop()
+            llvm.setBrC(curBID,whileConditionBID)
+            return curBID
         i += 1
     return curBID
 
@@ -238,9 +242,15 @@ def equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer):
         elif vQs.matchName("putch",layer):
             i = 2
             b = []  # 函数参数
-            while left[i] != 32:  # 不到右括号
+            parenthese = [1]
+            while len(parenthese) != 0:  # 不到右括号
+                if left[i] == 31:
+                    parenthese.append(1)
+                elif left[i] == 32:
+                    parenthese.pop()
                 b.append(left[i])
                 i += 1
+            b.pop()
             valueA, valueB = runConstantExpression(b, number, symRead, reg, nid, vQs,llvm,bid,layer)
             # call void @ putint(i32 % 4)
             # print("call void @putch(i32 " + str(valueA) + ")")
@@ -266,7 +276,7 @@ def returnProcess(a, number, symRead, reg, nid, vQs,llvm,bid,layer):
         llvm.addPrintByID(bid, "ret i32 " + str(valueA))
 
 # 从if（含）起，读到最后（不含下一个），返回i
-def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
+def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer,whileConditionBID):
     i = index
     bidCT=0
     bidCF=0
@@ -308,14 +318,16 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 break
             i+=1
         a.pop()#最后一个}推出去
-        bidCT=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        bidCT=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1,whileConditionBID)
         vQs.delete(layer + 1)
     elif pr[i]==15:
-        i,bidCT=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        i,bidCT=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1,whileConditionBID)
         vQs.delete(layer + 1)
     elif pr[i]==17:
         i, bidCT = conditionBProcess(pr, i, vQs, reg, number, symRead, nid, llvm, bidNT, layer + 1)
         vQs.delete(layer + 1)
+    elif pr[i]==18:#continue
+        llvm.setBrC(bidNT,whileConditionBID)
     #！待完善：不含大括号的定义
     else:
         a=[]
@@ -352,14 +364,16 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
                     break
                 i += 1
             a.pop()  # 最后一个}推出去
-            bidCF=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
+            bidCF=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1,whileConditionBID)
             vQs.delete(layer + 1)
         elif pr[i] == 15:
-            i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
+            i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1,whileConditionBID)
             vQs.delete(layer + 1)
         elif pr[i] == 17:
             i,bidCF = conditionBProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
             vQs.delete(layer + 1)
+        elif pr[i] == 18:  # continue
+            llvm.setBrC(bidNF, whileConditionBID)
         else:
             a = []
             while i < len(pr):
@@ -433,14 +447,16 @@ def conditionBProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 break
             i+=1
         a.pop()#最后一个}推出去
-        bidC=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        bidC=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1,bidCondition)
         vQs.delete(layer + 1)
     elif pr[i]==15:
-        i,bidC=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        i,bidC=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1,bidCondition)
         vQs.delete(layer + 1)
     elif pr[i]==17:
         i, bidC = conditionBProcess(pr, i, vQs, reg, number, symRead, nid, llvm, bidNT, layer + 1)
         vQs.delete(layer + 1)
+    elif pr[i]==18:#continue
+        llvm.setBrC(bidNT,bidCondition)
     #！待完善：不含大括号的定义
     else:
         a=[]
