@@ -196,7 +196,7 @@ def BlockItem(p, n, pr, v):
     return False
 
 
-# Stmt -> LVal(10) '=' Exp ';' | [Exp] ';' | 'return' Exp ';' | Block | 'if' '(' Cond ')' Stmt [ 'else' Stmt | 'while' '(' Cond ')' Stmt ]
+# Stmt -> LVal(10) '=' Exp ';' | [Exp] ';' | 'return' Exp ';' | Block | 'if' '(' Cond ')' Stmt [ 'else' Stmt | 'while' '(' Cond ')' Stmt ]| 'break' ';' | 'continue' ';'
 # 1首二字为VQ和‘=’
 # 3首字为‘return'
 # 4首字为’{‘
@@ -248,7 +248,16 @@ def Stmt(p, n, pr, v):
                     pr.append(32)
                     if Stmt(p,n,pr,v):
                         return True
-
+    elif a==18:
+        pr.append(18)
+        if b==34:
+            pr.append(34)
+            return True
+    elif a==19:
+        pr.append(19)
+        if b==34:
+            pr.append(34)
+            return True
     else:
         ungetTheSym(2, n, v)
         while getSym(p, n, v) != 34:

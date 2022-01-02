@@ -12,6 +12,8 @@
 | 15     | if               |
 | 16     | else             |
 | 17 | while |
+| 18 | continue |
+| 19 | break |
 | 20     | Number           |
 | 31     | (                |
 | 32     | )                |
