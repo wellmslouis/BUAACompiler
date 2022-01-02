@@ -191,6 +191,8 @@ class vQLayer:
             self.array[i].printQs()
     #清除同层前述变量
     def delete(self,layerInput):
+        if layerInput>=len(self.array):
+            return
         self.array[layerInput].delete()
 
     def selectName(self, nameInput):

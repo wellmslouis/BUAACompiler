@@ -11,6 +11,8 @@ class llvmBlock:
         self.brB=0
         #continue跳转
         self.brC=0
+        # break跳转
+        self.brD = 0
 
     def getBID(self):
         return self.blockID
@@ -28,6 +30,14 @@ class llvmBlock:
             print("\t"+"br i1 %"+str(self.brA)+",label %"+str(self.brT)+",label %"+str(self.brF))
         elif self.brC!=0:
             print("\t" + "br label %" + str(self.brC))
+        elif self.brD!=0:
+            # print("\t" + "br label %" + str(self.brD))
+            if len(self.print_)==0 or not self.print_[-1].startswith("ret"):
+                valueA,valueB=self.formatBrD()
+                if valueA==0:
+                    print("\t"+"br label %"+str(self.brD))
+                else:
+                    return False,valueA,valueB
         elif self.brB!=0:
             if len(self.print_)==0 or not self.print_[-1].startswith("ret"):
                 valueA,valueB=self.formatBrB()
@@ -62,8 +72,18 @@ class llvmBlock:
             a=str(self.brB).split('!')
             return int(a[0]),a[1]
 
+    def formatBrD(self):
+        if str(self.brD).isdigit():
+            return 0,'A'
+        else:
+            a=str(self.brD).split('!')
+            return int(a[0]),a[1]
+
     def setBrC(self,brInput):
         self.brC=brInput
+
+    def setBrD(self,brInput):
+        self.brD=brInput
 
 class llvm:
     def __init__(self):
@@ -136,3 +156,13 @@ class llvm:
         for i in self.array:
             if i.getBID() == bidInput:
                 i.setBrC(brInput)
+
+    def setBrD(self,bidInput,brInput):
+        haveID = False
+        for i in self.array:
+            if i.getBID() == bidInput:
+                i.setBrD(brInput)
+                haveID=True
+        if not haveID:
+            self.addBlock(bidInput)
+            self.setBrD(bidInput, brInput)
