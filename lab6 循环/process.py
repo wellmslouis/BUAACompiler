@@ -132,6 +132,8 @@ def sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
 # 2：输出函数
 # 3.单独语句不处理
 def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
+    if len(a)==0:
+        return
     left = []
     right = []
     # 在等号左还是右
@@ -170,21 +172,6 @@ def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
             valueR.append(valueB)
     if idL != -1:  # 不是函数
         if len(right) != 0:
-            # # int类型已定义
-            # if vQs.getTypeForID(idL,layer) == 10 and vQs.getRegForID(idL,layer) != 0:
-            #     # store i32 % 2, i32 * % 1
-            #     llvm.addPrintByID(bid, "store i32 " + str(valueR[0]) + ", i32* %" + str(vQs.getRegForID(idL,layer)))
-            # # const类型无值
-            # elif vQs.getTypeForID(idL,layer) == 20:
-            #     if vQs.getNumForID(idL,layer) == "":
-            #         if len(valueR) > 1:
-            #             if valueR[1]:
-            #                 print("错误：使用变量为常量赋值！")
-            #                 exit(1)
-            #         vQs.setNumForID(valueR[0], idL,layer)
-            #     else:
-            #         print("错误：常量已赋值！")
-            #         exit(1)
             if layer==0 and valueR[1]:
                 print("错误：使用变量为全局变量赋值！")
                 exit(1)
@@ -234,9 +221,15 @@ def equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer):
         if vQs.matchName("putint",layer):
             i = 2
             b = []  # 函数参数
-            while left[i] != 32:  # 不到右括号
+            parenthese=[1]
+            while len(parenthese)!=0:  # 不到右括号
+                if left[i]==31:
+                    parenthese.append(1)
+                elif left[i]==32:
+                    parenthese.pop()
                 b.append(left[i])
                 i += 1
+            b.pop()
             valueA, valueB = runConstantExpression(b, number, symRead, reg, nid, vQs,llvm,bid,layer)
             # call void @ putint(i32 % 4)
             # print("call void @putint(i32 " + str(valueA) + ")")
@@ -254,6 +247,11 @@ def equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer):
             llvm.addPrintByID(bid, "call void @putch(i32 " + str(valueA) + ")")
             return -1
         else:
+            #如果左侧不只一个
+            if len(left)>1:
+                for i in left:
+                    if i==20:
+                        nid.getID()
             return vQs.getID(layer)
 
 
