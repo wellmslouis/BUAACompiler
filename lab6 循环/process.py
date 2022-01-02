@@ -76,6 +76,9 @@ def paragraphProcess(pr, vQs, reg, number, symRead, nid,llvm,bid,layer):
             i-=1
             curBID=paragraphProcess(b,vQs, reg, number, symRead, nid,llvm,curBID,layer+1)
             vQs.delete(layer+1)
+        elif pr[i]==17:
+            a.pop()
+            i, curBID = conditionBProcess(pr, i, vQs, reg, number, symRead, nid, llvm, curBID, layer)
         i += 1
     return curBID
 
@@ -312,6 +315,9 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
     elif pr[i]==15:
         i,bidCT=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
         vQs.delete(layer + 1)
+    elif pr[i]==17:
+        i, bidCT = conditionBProcess(pr, i, vQs, reg, number, symRead, nid, llvm, bidNT, layer + 1)
+        vQs.delete(layer + 1)
     #！待完善：不含大括号的定义
     else:
         a=[]
@@ -353,6 +359,9 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
         elif pr[i] == 15:
             i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
             vQs.delete(layer + 1)
+        elif pr[i] == 17:
+            i,bidCF = conditionBProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
+            vQs.delete(layer + 1)
         else:
             a = []
             while i < len(pr):
@@ -379,4 +388,76 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
         llvm.setBrB(bidNF, newBID)
     else:
         llvm.setBrB(bidCF,newBID)
+    return i,newBID
+
+
+# 从while（含）起，读到最后（不含下一个），返回i
+def conditionBProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer):
+    i = index
+    condition = []
+    #得到条件表达式condition
+    if pr[i] == 17:  # while
+        i += 1
+        if pr[i] == 31:  # (
+            i += 1
+            parentheses=[1]
+            # while pr[i] != 32:  # )
+            #     condition.append(pr[i])
+            #     i += 1
+            while i<len(pr):
+                condition.append(pr[i])
+                if pr[i]==31:
+                    parentheses.append(1)
+                elif pr[i]==32:
+                    parentheses.pop()
+                if len(parentheses) == 0:
+                    break
+                i+=1
+            condition.pop()
+    bidCondition=reg.getID()
+    llvm.setBrB(bid,bidCondition)
+    bidN=handleCondition(condition,vQs, reg, number, symRead, nid,llvm,bidCondition,layer)#条件语句判断结束bid
+    bidNT=reg.getID()
+    llvm.setBrT(bidN,bidNT)
+    i+=1
+    bidC=bidNT
+    if pr[i]==33:
+        braces=[1]#大括号栈，左1右2
+        a=[]
+        i+=1
+        while i<len(pr):
+            a.append(pr[i])
+            if pr[i]==33:#{
+                braces.append(1)
+            elif pr[i]==35:#}
+                braces.pop()
+            if len(braces)==0:
+                break
+            i+=1
+        a.pop()#最后一个}推出去
+        bidC=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        vQs.delete(layer + 1)
+    elif pr[i]==15:
+        i,bidC=conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+        vQs.delete(layer + 1)
+    elif pr[i]==17:
+        i, bidC = conditionBProcess(pr, i, vQs, reg, number, symRead, nid, llvm, bidNT, layer + 1)
+        vQs.delete(layer + 1)
+    #！待完善：不含大括号的定义
+    else:
+        a=[]
+        while i<len(pr):
+            a.append(pr[i])
+            if pr[i] == 34:
+                if a[0] == 13:
+                    returnProcess(a, number, symRead, reg, nid, vQs,llvm,bidNT,layer+1)
+                    vQs.delete(layer + 1)
+                else:
+                    sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bidNT,layer+1)
+                    vQs.delete(layer + 1)
+                break
+            i+=1
+    llvm.setBrB(bidC,bidCondition)#while段落语句结束跳转回条件语句初
+    newBID=reg.getID()
+    llvm.setBrF(bidN, newBID)
     return i,newBID
