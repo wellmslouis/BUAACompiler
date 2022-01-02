@@ -12,7 +12,7 @@ if __name__ == '__main__':
     for l in sys.stdin:
         procedure += l
     # 测试读入
-    # with open("test/testB.txt", "r") as f:
+    # with open("test/testD.txt", "r") as f:
     #     procedure = f.read()
     # print(procedure.replace("[]","\n"))
     # 类别码-读取字典
@@ -57,14 +57,11 @@ if __name__ == '__main__':
     if vQL.selectName("putch"):
         print("declare void @putch(i32)")
     print("define dso_local i32 @main(){")
-    # 去除main函数外层
-    # b=len(print_)-1
-    # print_A=print_[5:b]
-    # print(print_A)
+
     process(print_, vQL, reg, number, symRead, nid, llvm)
     llvm.printAll()
     # try:
-    #     paragraphProcess(print_A,vQs,reg,number,symRead,nid,llvm,0)
+    #     process(print_,vQL,reg,number,symRead,nid,llvm)
     #     llvm.printAll()
     # except:
     #     llvm.printAll()

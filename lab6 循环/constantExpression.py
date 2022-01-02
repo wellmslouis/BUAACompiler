@@ -5,7 +5,9 @@ def translateConstantExpression(pr,n,symRead,nid,vQs,reg,llvm,bid,layer):
     a=[]
     haveVQ=False
     for i in range(len(pr)):
-        if pr[i]==20:
+        if not str(pr[i]).isdigit():
+            a.append(pr[i])
+        elif pr[i]==20:
             a.append(n[nid.getID()])
         elif pr[i]==10:
             vQs.getNext(layer)

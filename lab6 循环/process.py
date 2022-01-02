@@ -178,7 +178,18 @@ def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
             valueA, valueB = runConstantExpression(right, number, symRead, reg, nid, vQs,llvm,bid,layer)
             valueR.append(valueA)
             valueR.append(valueB)
-    if idL != -1:  # 不是函数
+        else:
+            if len(right)>3:
+                rightA=[]
+                rightA.append(valueR[0])
+                for j in range(3,len(right)):
+                    rightA.append(right[j])
+                # print(rightA)
+                valueA,valueB=runConstantExpression(rightA, number, symRead, reg, nid, vQs, llvm, bid, layer)
+                valueR.clear()
+                valueR.append(valueA)
+                valueR.append(valueB)
+    if idL != -1:  # 左不是函数
         if len(right) != 0:
             if layer==0 and valueR[1]:
                 print("错误：使用变量为全局变量赋值！")
@@ -373,7 +384,7 @@ def conditionAProcess(pr, index, vQs, reg, number, symRead, nid,llvm,bid,layer,w
             bidCF=paragraphProcess(a, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1,whileConditionBID,whileBID)
             vQs.delete(layer + 1)
         elif pr[i] == 15:
-            i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1,whileConditionBID,whileBID)
+            i,bidCF = conditionAProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer,whileConditionBID,whileBID)
             vQs.delete(layer + 1)
         elif pr[i] == 17:
             i,bidCF = conditionBProcess(pr, i, vQs, reg, number, symRead, nid,llvm,bidNF,layer+1)
