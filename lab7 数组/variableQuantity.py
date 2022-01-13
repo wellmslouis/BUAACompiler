@@ -3,7 +3,7 @@ class variableQuantity:
     def __init__(self, nameInput):
         self.name = nameInput
         self.register = 0  # 寄存器
-        self.type = 0  # 数据类型 10是int 20是const int 30是一维数组 31是二维数组
+        self.type = 0  # 数据类型 10是int 20是const int 30是int一维数组 31是int二维数组 40是const int一维数组 41是const int二维数组
         self.numConst = ""  # 仅供常量使用的数据存储
 
     def store(self, registerInput):

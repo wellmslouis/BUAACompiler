@@ -140,6 +140,15 @@ def sentenceAProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
 # 2：输出函数
 # 3.单独语句不处理
 def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
+    hasInt=False
+    hasLeftBracket=False
+    for i in a:
+        if i==11:
+            hasInt=True
+        elif i==322:
+            hasLeftBracket=True
+    if hasInt and hasLeftBracket:
+        return sentenceCProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer)
     if len(a)==0:
         return
     left = []
@@ -200,6 +209,29 @@ def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 a=vQs.assign(layer,idL,valueR[0],False)
             if a["type"]==1:
                 llvm.addPrintByID(bid, "store i32 " + str(valueR[0]) + ", i32* %" + str(a["reg"]))
+
+#专为定义数组
+def sentenceCProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
+    left = []
+    right = []
+    # 在等号左还是右
+    isleft = True
+    # 按照等号拆分为左右两个列表
+    for i in a:
+        if i == 312:
+            isleft = False
+            continue
+        if isleft:
+            left.append(i)
+        else:
+            right.append(i)
+
+    #左边
+    w=0#维度
+    for i in a:
+        if i==322:
+            w+=1
+
 
 
 # 返回vQs.getID()
