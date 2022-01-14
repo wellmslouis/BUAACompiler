@@ -4,6 +4,8 @@ from register import register,nid
 from process import paragraphProcess, layerProcess, process
 from llvm import llvm
 
+from constantExpressionForConst import *
+
 
 if __name__ == '__main__':
     # 程序存在于这个字符串中

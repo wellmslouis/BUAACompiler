@@ -5,6 +5,26 @@ class variableQuantity:
         self.register = 0  # 寄存器
         self.type = 0  # 数据类型 10是int 20是const int 30是int一维数组 31是int二维数组 40是const int一维数组 41是const int二维数组
         self.numConst = ""  # 仅供常量使用的数据存储
+        self.arrayLengthA=0
+        self.arrayLengthB=0
+        self.arrayNumConst=[]#仅供常量数组使用的数据存储
+
+    def setArrayLength(self,lengthInput):
+        self.arrayLengthA = int(lengthInput[0])
+        if self.type==31 or self.type==41:
+            self.arrayLengthB=int(lengthInput[1])
+        #初始化为0
+        # if self.type==40:
+        #     for i in range(self.arrayLengthA):
+        #         self.arrayNumConst.append(0)
+        # elif self.type==41:
+        #     for i in range(self.arrayLengthA):
+        #         self.arrayNumConst.append([])
+        #         for j in range(self.arrayLengthB):
+        #             self.arrayNumConst.append(0)
+
+    def getArrayLengthA(self):
+        return self.arrayLengthA
 
     def store(self, registerInput):
         self.register = registerInput
@@ -26,6 +46,12 @@ class variableQuantity:
 
     def getNum(self):
         return self.numConst
+
+    def setArrayNum(self, numInput):
+        self.arrayNumConst=numInput
+
+    def getArrayNum(self):
+        return self.arrayNumConst
 
     def delete(self):
         self.register = 0  # 寄存器
@@ -101,9 +127,21 @@ class variableQuantitys:
         a = self.order[self.id]
         return self.array[a].getNum()
 
+    def getArrayNum(self):
+        a = self.order[self.id]
+        return self.array[a].getArrayNum()
+
     def getName(self):
         a = self.order[self.id]
         return self.array[a].getName()
+
+    def setArrayLength(self,l):
+        a = self.order[self.id]
+        return self.array[a].setArrayLength(l)
+
+    def getArrayLengthA(self):
+        a = self.order[self.id]
+        return self.array[a].getArrayLengthA()
 
     def matchName(self, nameInput):
         a = self.order[self.id]
@@ -143,9 +181,21 @@ class variableQuantitys:
         a = self.order[id]
         return self.array[a].getNum()
 
+    def setArrayNumForID(self, n, id):
+        a = self.order[id]
+        self.array[a].setArrayNum(n)
+
+    def getArrayNumForID(self, id):
+        a = self.order[id]
+        return self.array[a].getArrayNum()
+
     def getNameForID(self, id):
         a = self.order[id]
         return self.array[a].getName()
+
+    def getArrayLengthAForID(self, id):
+        a = self.order[id]
+        return self.array[a].getArrayLengthA()
 
     # 查询变量
     def selectName(self, nameInput):
@@ -171,6 +221,15 @@ class variableQuantitys:
 
     def setNumForLoc(self,numInput,locInput):
         self.array[locInput].setNum(numInput)
+
+    def getArrayNumForLoc(self,locInput):
+        return self.array[locInput].getArrayNum()
+
+    def setArrayNumForLoc(self,numInput,locInput):
+        self.array[locInput].setArrayNum(numInput)
+
+    def getArrayLengthAForLoc(self,locInput):
+        return self.array[locInput].getArrayLengthA()
 
 class vQLayer:
     def __init__(self):
@@ -223,6 +282,30 @@ class vQLayer:
             return self.getID(layerInput)
         return -1
 
+    def defArrayInt(self,layerInput,wInput,lengthInut):
+        if self.array[layerInput].getType() == 0:
+            # self.array[layerInput].setReg(regInput)
+            if wInput==1:
+                self.array[layerInput].setType(30)
+            elif wInput==2:
+                self.array[layerInput].setType(31)
+            self.array[layerInput].setArrayLength(lengthInut)
+            return self.getID(layerInput)
+        return -1
+
+    def defArrayIntReg(self,layerInput,regInput):
+        self.array[layerInput].setReg(regInput)
+
+    def defArrayConst(self,layerInput,wInput,lengthInut):
+        if self.array[layerInput].getType() == 0:
+            if wInput==1:
+                self.array[layerInput].setType(40)
+            elif wInput==2:
+                self.array[layerInput].setType(41)
+            self.array[layerInput].setArrayLength(lengthInut)
+            return self.getID(layerInput)
+        return -1
+
     #赋值
     def assign(self,layerInput,IDLeftInput,numInput,isVInput):
         r={}
@@ -239,6 +322,27 @@ class vQLayer:
                 else:
                     self.array[layerInput].setNumForID(numInput,IDLeftInput)
                 r["type"]=2
+                return r
+            else:
+                print("错误：常量已赋值！")
+                exit(1)
+        elif self.array[layerInput].getTypeForID(IDLeftInput)==30 and self.array[layerInput].getRegForID(IDLeftInput)!=0:#int一维数组
+            r["type"] = 3
+            r["reg"] = self.array[layerInput].getRegForID(IDLeftInput)
+            return r
+        elif self.array[layerInput].getTypeForID(IDLeftInput)==31 and self.array[layerInput].getRegForID(IDLeftInput)!=0:#int二维数组
+            r["type"] = 4
+            r["reg"] = self.array[layerInput].getRegForID(IDLeftInput)
+            r["length"]=self.array[layerInput].getArrayLengthAForID(IDLeftInput)
+            return r
+        elif self.array[layerInput].getTypeForID(IDLeftInput)==40 or self.array[layerInput].getTypeForID(IDLeftInput)==41:#const数组
+            if len(self.array[layerInput].getArrayNumForID(IDLeftInput))==0:#未赋值
+                if isVInput:
+                    print("错误：使用变量为常量赋值！")
+                    exit(1)
+                else:
+                    self.array[layerInput].setArrayNumForID(numInput,IDLeftInput)
+                r["type"]=5
                 return r
             else:
                 print("错误：常量已赋值！")
@@ -272,6 +376,27 @@ class vQLayer:
                 else:
                     print("错误：常量已赋值！")
                     exit(1)
+            elif self.array[layerInput].getTypeForLoc(a) == 30 and self.array[layerInput].getRegForLoc(a) != 0:
+                r["type"] = 3
+                r["reg"] = self.array[layerInput].getRegForLoc(a)
+                return r
+            elif self.array[layerInput].getTypeForLoc(a) == 31 and self.array[layerInput].getRegForLoc(a) != 0:
+                r["type"] = 4
+                r["reg"] = self.array[layerInput].getRegForLoc(a)
+                r["length"]=self.array[layerInput].getArrayLengthAForLoc(a)
+                return r
+            elif self.array[layerInput].getTypeForLoc(a) == 40 or self.array[layerInput].getTypeForLoc(a) == 41:  # const数组
+                if self.array[layerInput].getArrayNumForLoc(a) == "":  # 未赋值
+                    if isVInput:
+                        print("错误：使用变量为常量赋值！")
+                        exit(1)
+                    else:
+                        self.array[layerInput].setArrayNumForLoc(numInput, a)
+                    r["type"] = 5
+                    return r
+                else:
+                    print("错误：常量已赋值！")
+                    exit(1)
             else:  # 当前层数找不到定义
                 if layerInput == 0:
                     print("错误：未定义量！")
@@ -300,6 +425,22 @@ class vQLayer:
             else:
                 print("错误：常量未赋值！")
                 exit(1)
+        elif self.array[layerInput].getType() == 30 and self.array[layerInput].getReg() != 0:
+            r["type"]=3
+            r["reg"]=self.array[layerInput].getReg()
+            return r
+        elif self.array[layerInput].getType() == 31 and self.array[layerInput].getReg() != 0:
+            r["type"]=4
+            r["reg"]=self.array[layerInput].getReg()
+            return r
+        elif self.array[layerInput].getType() == 40 or self.array[layerInput].getType() == 41:
+            if self.array[layerInput].getArrayNum()!="":
+                r["type"]=5
+                r["num"]=self.array[layerInput].getArrayNum()
+                return r
+            else:
+                print("错误：常量数组未赋值！")
+                exit(1)
         else:
             if layerInput==0:
                 print("错误：未定义量！")
@@ -324,6 +465,22 @@ class vQLayer:
                     return r
                 else:
                     print("错误：常量未赋值！")
+                    exit(1)
+            elif self.array[layerInput].getTypeForLoc(a) == 30 and self.array[layerInput].getRegForLoc(a) != 0:
+                r["type"] = 3
+                r["reg"] = self.array[layerInput].getRegForLoc(a)
+                return r
+            elif self.array[layerInput].getTypeForLoc(a) == 31 and self.array[layerInput].getRegForLoc(a) != 0:
+                r["type"] = 4
+                r["reg"] = self.array[layerInput].getRegForLoc(a)
+                return r
+            elif self.array[layerInput].getTypeForLoc(a) == 40 or self.array[layerInput].getTypeForLoc(a) == 41:  # const数组
+                if self.array[layerInput].getArrayNumForLoc(a) != "":  # 已赋值
+                    r["type"] = 2
+                    r["num"] = self.array[layerInput].getArrayNumForLoc(a)
+                    return r
+                else:
+                    print("错误：常量数组未赋值！")
                     exit(1)
             else:  # 当前层数找不到定义
                 if layerInput == 0:

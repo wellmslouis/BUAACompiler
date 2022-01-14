@@ -1,6 +1,7 @@
 # 具体处理
-from constantExpression import runConstantExpression
+from constantExpression import runConstantExpression, runConstantExpressionB
 from conditionExpression import handleCondition
+from constantExpressionForConst import runConstantExpressionA
 from syntaxAnalysis import CompUnit
 from variableQuantity import rawVQs,vQLayer
 
@@ -164,7 +165,7 @@ def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
             left.append(i)
         else:
             right.append(i)
-    idL = equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer)
+    idL,arrayLA,arrayLB = equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer)
     valueR = []
     # if idL!=-1:
     if len(right) != 0:
@@ -209,6 +210,13 @@ def sentenceBProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 a=vQs.assign(layer,idL,valueR[0],False)
             if a["type"]==1:
                 llvm.addPrintByID(bid, "store i32 " + str(valueR[0]) + ", i32* %" + str(a["reg"]))
+            elif a["type"]==3:
+                llvm.addPrintByID(bid, "%" + str(reg.getID()) + " = getelementptr i32, i32* %" + str(a["reg"]) + ", i32 " + str(arrayLA))
+                llvm.addPrintByID(bid, "store i32 " + str(valueR[0]) + ", i32* %" + str(reg.readID()))
+            elif a["type"]==4:
+                aa=[arrayLA,"*",a["length"],"+",arrayLB]
+                llvm.addPrintByID(bid, "%" + str(reg.getID()) + " = getelementptr i32, i32* %" + str(a["reg"]) + ", i32 " + runConstantExpressionB(aa,reg,llvm,bid))
+                llvm.addPrintByID(bid, "store i32 " + str(valueR[0]) + ", i32* %" + str(reg.readID()))
 
 #专为定义数组
 def sentenceCProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
@@ -228,10 +236,228 @@ def sentenceCProcess(a, vQs, reg, number, symRead, nid,llvm,bid,layer):
 
     #左边
     w=0#维度
+    c=-1#left返回ID
+    g=0#int数组首地址指针
+    arrayLengthA=0#二维数组一维长度
+    arrayLengthB=0
     for i in a:
         if i==322:
             w+=1
+    if left[0]==11:#int
+        if left[1] == 10:
+            vQs.getNext(layer)
+            j=2
+            d=[]
+            e=[]
+            isPar=False
+            while j <len(left):
+                if left[j]==322:
+                    isPar=True
+                    j+=1
+                    continue
+                elif left[j]==323:
+                    f=runConstantExpressionA(d, number, symRead,  nid, vQs,  layer)
+                    e.append(f)
+                    d.clear()
+                    isPar=False
+                    j+=1
+                    continue
+                if isPar:
+                    d.append(left[j])
+                j+=1
+            c = vQs.defArrayInt(layer, w,e)
+            if c!=-1:
+                b = reg.getID()
+                if w==1:
+                    llvm.addPrintByID(bid, "%" + str(b) + " = alloca ["+str(e[0])+" x i32]")
+                    g=reg.getID()
+                    #%4 = getelementptr [2 x i32], [2 x i32]* %3, i32 0, i32 0
+                    llvm.addPrintByID(bid, "%" + str(g) + " = getelementptr ["+str(e[0])+" x i32], ["+str(e[0])+" x i32]* %"+str(b)+", i32 0, i32 0")
+                    vQs.defArrayIntReg(layer,g)
+                elif w==2:
+                    arrayLengthA=e[0]
+                    llvm.addPrintByID(bid, "%" + str(b) + " = alloca ["+str(e[0])+" x ["+str(e[1])+" x i32]]")
+                    #%3 = getelementptr [2 x [2 x i32]], [2 x [2 x i32]]* %2, i32 0, i32 0
+                    #%4 = getelementptr [2 x i32], [2 x i32]* %3, i32 0, i32 0
+                    llvm.addPrintByID(bid,"%" + str(reg.getID())+ " = getelementptr ["+str(e[0])+" x ["+str(e[1])+" x i32]], ["+str(e[0])+" x ["+str(e[1])+" x i32]]* %"+str(b)+", i32 0, i32 0")
+                    g = reg.getID()
+                    llvm.addPrintByID(bid, "%" + str(g) + " = getelementptr [" + str(e[1]) + " x i32], [" + str(e[1]) + " x i32]* %" + str(reg.readID()-1) + ", i32 0, i32 0")
+                    vQs.defArrayIntReg(layer, g)
+            else:
+                print("错误：int数组重复定义！")
+                exit(1)
+        else:
+            print("错误！")
+            exit(1)
+    elif left[0]==14:
+        if left[1]==11:
+            if left[2]==10:
+                vQs.getNext(layer)
+                j = 3
+                d = []
+                e = []
+                isPar = False
+                while j < len(left):
+                    if left[j] == 322:
+                        isPar = True
+                        j += 1
+                        continue
+                    elif left[j] == 323:
+                        f = runConstantExpressionA(d, number, symRead, nid, vQs, layer)
+                        e.append(f)
+                        d.clear()
+                        isPar = False
+                        j += 1
+                        continue
+                    if isPar:
+                        d.append(left[j])
+                    j += 1
+                c = vQs.defArrayConst(layer, w, e)
+                arrayLengthA=e[0]
+                if len(e)==2:
+                    arrayLengthB=e[1]
+                if c == -1:
+                    print("错误：int数组重复定义！")
+                    exit(1)
 
+    #右边
+    if len(right)!=0:
+        if left[0]==11:#int
+            if w==1:
+                #去除最外层大括号
+                if right[0]==33:
+                    right.pop(0)
+                if right[len(right)-1]==35:
+                    right.pop()
+                d=[]
+                e=[]
+                for i in right:
+                    if i==",":
+                        e.append([])
+                        for j in d:
+                            e[len(e)-1].append(j)
+                        d.clear()
+                        i+=1
+                        continue
+                    d.append(i)
+                    i+=1
+                for i in range(len(e)):
+                    valueA, valueB = runConstantExpression(e[i], number, symRead, reg, nid, vQs, llvm, bid, layer)
+                    #%5 = getelementptr i32, i32* %4, i32 2
+                    leftReg=reg.getID()
+                    llvm.addPrintByID(bid, "%" + str(leftReg) + " = getelementptr i32, i32* %"+str(g)+", i32 "+str(i))
+                    llvm.addPrintByID(bid,"store i32 "+str(valueA)+", i32* %"+str(leftReg))
+            elif w==2:
+                # 去除最外层大括号
+                if right[0] == 33:
+                    right.pop(0)
+                if right[len(right) - 1] == 35:
+                    right.pop()
+                d = []
+                e = []
+                for i in right:
+                    if i == ",":
+                        e.append([])
+                        for j in d:
+                            e[len(e) - 1].append(j)
+                        d.clear()
+                        i += 1
+                        continue
+                    d.append(i)
+                    i += 1
+                h = []
+                for k in range(len(e)):
+                    e[k].pop(0)
+                    e[k].pop()
+                    f=[]
+                    h.append([])
+                    for i in e:
+                        if i == ",":
+                            h[k].append([])
+                            for j in f:
+                                h[k][len(h[k]) - 1].append(j)
+                            f.clear()
+                            i += 1
+                            continue
+                        f.append(i)
+                        i += 1
+                for i in range(len(h)):
+                    for j in range(len(h[i])):
+                        valueA, valueB = runConstantExpression(h[i][j], number, symRead, reg, nid, vQs, llvm, bid, layer)
+                        # %5 = getelementptr i32, i32* %4, i32 2
+                        leftReg = reg.getID()
+                        llvm.addPrintByID(bid,"%" + str(leftReg) + " = getelementptr i32, i32* %" + str(g) + ", i32 " + str(i*arrayLengthA+j))
+                        llvm.addPrintByID(bid, "store i32 " + str(valueA) + ", i32* %" + str(leftReg))
+        elif left[0]==14:#const
+            if w==1:
+                #去除最外层大括号
+                if right[0]==33:
+                    right.pop(0)
+                if right[len(right)-1]==35:
+                    right.pop()
+                d=[]
+                e=[]
+                for i in right:
+                    if i==",":
+                        e.append([])
+                        for j in d:
+                            e[len(e)-1].append(j)
+                        d.clear()
+                        i+=1
+                        continue
+                    d.append(i)
+                    i+=1
+                arrayNum=[]
+                for i in range(arrayLengthA):
+                    arrayNum.append(0)
+                for i in range(len(e)):
+                    value = runConstantExpressionA(e[i], number, symRead, nid, vQs,layer)
+                    arrayNum[i]=value
+                vQs.assign(layer, c, arrayNum, False)
+            elif w==2:
+                # 去除最外层大括号
+                if right[0] == 33:
+                    right.pop(0)
+                if right[len(right) - 1] == 35:
+                    right.pop()
+                d = []
+                e = []
+                for i in right:
+                    if i == ",":
+                        e.append([])
+                        for j in d:
+                            e[len(e) - 1].append(j)
+                        d.clear()
+                        i += 1
+                        continue
+                    d.append(i)
+                    i += 1
+                h = []
+                for k in range(len(e)):
+                    e[k].pop(0)
+                    e[k].pop()
+                    f=[]
+                    h.append([])
+                    for i in e:
+                        if i == ",":
+                            h[k].append([])
+                            for j in f:
+                                h[k][len(h[k]) - 1].append(j)
+                            f.clear()
+                            i += 1
+                            continue
+                        f.append(i)
+                        i += 1
+                arrayNum=[]
+                for i in range(arrayLengthA):
+                    arrayNum.append([])
+                    for j in range(arrayLengthB):
+                        arrayNum[i].append(0)
+                for i in range(len(h)):
+                    for j in range(len(h[i])):
+                        value = runConstantExpressionA(h[i][j], number, symRead, nid, vQs,layer)
+                        arrayNum[i][j]=value
+                vQs.assign(layer, c, arrayNum, False)
 
 
 # 返回vQs.getID()
@@ -245,7 +471,7 @@ def equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer):
             c=vQs.defInt(layer,b)
             if c!=-1:
                 llvm.addPrintByID(bid,"%" + str(b) + " = alloca i32")
-                return c
+                return c,-1,-1
             else:
                 print("错误：变量重复定义！")
                 exit(1)
@@ -260,7 +486,7 @@ def equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer):
                 vQs.getNext(layer)
                 c=vQs.defConst(layer)
                 if c!=-1:
-                    return vQs.getID(layer)
+                    return vQs.getID(layer),-1,-1
                 else:
                     exit(1)
             else:
@@ -285,7 +511,7 @@ def equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer):
             # call void @ putint(i32 % 4)
             # print("call void @putint(i32 " + str(valueA) + ")")
             llvm.addPrintByID(bid, "call void @putint(i32 " + str(valueA) + ")")
-            return -1
+            return -1,-1,-1
         elif vQs.matchName("putch",layer):
             i = 2
             b = []  # 函数参数
@@ -302,14 +528,47 @@ def equalLeft(left, vQs, reg, number, symRead, nid,llvm,bid,layer):
             # call void @ putint(i32 % 4)
             # print("call void @putch(i32 " + str(valueA) + ")")
             llvm.addPrintByID(bid, "call void @putch(i32 " + str(valueA) + ")")
-            return -1
+            return -1,-1,-1
         else:
+            w=0
+            for i in left:
+                if i==322:
+                    w+=1
             #如果左侧不只一个
-            if len(left)>1:
-                for i in left:
-                    if i==20:
-                        nid.getID()
-            return vQs.getID(layer)
+            # if len(left)>1:
+            #     for i in left:
+            #         if i==20:
+            #             nid.getID()
+            if w==0:
+                return vQs.getID(layer),-1,-1
+            elif w==1:
+                aa=[]
+                i=2
+                while i<len(left):
+                    if left[i]==323:
+                        valueA, valueB = runConstantExpression(aa, number, symRead, reg, nid, vQs, llvm, bid, layer)
+                        return vQs.getID(layer),valueA,-1
+                    aa.append(left[i])
+                    i+=1
+            elif w==2:
+                aa = []
+                valueA=0
+                i = 2
+                while i < len(left):
+                    if left[i] == 323:
+                        valueA, valueB = runConstantExpression(aa, number, symRead, reg, nid, vQs, llvm, bid, layer)
+                        i+=1
+                        break
+                    aa.append(left[i])
+                    i += 1
+                i+=1
+                aa.clear()
+                while i<len(left):
+                    if left[i] == 323:
+                        valueC, valueD = runConstantExpression(aa, number, symRead, reg, nid, vQs, llvm, bid, layer)
+                        return vQs.getID(layer),valueA,valueC
+                    aa.append(left[i])
+                    i += 1
 
 
 def returnProcess(a, number, symRead, reg, nid, vQs,llvm,bid,layer):
